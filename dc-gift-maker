@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discord Gift Generator</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #313338;
+      color: #f2f3f5;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      width: 420px;
+      max-width: calc(100% - 32px);
+      background: #2b2d31;
+      border-radius: 8px;
+      padding: 32px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0 0 8px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #b5bac1;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      color: #b5bac1;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: #1e1f22;
+      color: #dbdee1;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    input:focus {
+      box-shadow: 0 0 0 1px #5865f2;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 4px;
+      background: #5865f2;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover {
+      background: #4752c4;
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 12px;
+      background: #1e1f22;
+      border-radius: 4px;
+      word-break: break-all;
+      font-size: 13px;
+      color: #b5bac1;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="logo">Discord</div>
+
+    <h1>Gift Link Generator</h1>
+    <div class="subtitle">
+      Enter the gift name and image URL.
+    </div>
+
+    <label for="name">Gift Name</label>
+    <input
+      id="name"
+      type="text"
+      placeholder="Nerd"
+      autocomplete="off"
+    >
+
+    <label for="image">Image URL</label>
+    <input
+      id="image"
+      type="url"
+      placeholder="https://example.com/image.png"
+      autocomplete="off"
+    >
+
+    <button onclick="generateGift()">
+      Generate Gift Link
+    </button>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    function generateGift() {
+      const name = document.getElementById("name").value.trim();
+      const image = document.getElementById("image").value.trim();
+
+      if (!name) {
+        alert("Please enter a gift name.");
+        return;
+      }
+
+      if (!image) {
+        alert("Please enter an image URL.");
+        return;
+      }
+
+      const url =
+        "https://denvi.pages.dev/dc-gift" +
+        "?name=" + encodeURIComponent(name) +
+        "&image=" + encodeURIComponent(image) +
+        "&claimed=false";
+
+      document.getElementById("result").textContent = url;
+      document.getElementById("result").style.display = "block";
+
+      window.location.href = url;
+    }
+  </script>
+
+</body>
+</html>

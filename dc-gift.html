@@ -1,421 +1,451 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Gift</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Discord Gift</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #313338;
+    color: #ffffff;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================
+   BACKGROUND
+========================= */
+
+.background {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
 
-        body {
-            background:
-                radial-gradient(circle at 50% 35%, #34395f 0%, #202236 38%, #111218 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(88, 101, 242, 0.25),
+            transparent 40%
+        ),
+        linear-gradient(
+            135deg,
+            #1e1f22,
+            #313338 55%,
+            #232428
+        );
+}
 
-        .page {
-            width: 100%;
-            min-height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+.background::before {
+    content: "";
+    position: absolute;
+    inset: 0;
 
-        /* Main gift card */
-        .gift-card {
-            width: min(92vw, 520px);
-            min-height: 610px;
+    opacity: 0.12;
 
-            border-radius: 28px;
+    background-image:
+        radial-gradient(
+            circle,
+            #5865f2 1px,
+            transparent 1px
+        );
 
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(255, 255, 255, 0.12),
-                    rgba(255, 255, 255, 0.035)
-                );
+    background-size: 45px 45px;
+}
 
-            border: 1px solid rgba(255, 255, 255, 0.1);
+/* =========================
+   DISCORD LOGO
+========================= */
 
-            box-shadow:
-                0 30px 80px rgba(0, 0, 0, 0.55),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+.discord-logo {
+    position: fixed;
+    top: 38px;
+    left: 45px;
 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
 
-            padding: 58px 35px 42px;
+.discord-logo-icon {
+    width: 34px;
+    height: 27px;
 
-            position: relative;
-            overflow: hidden;
-        }
+    background: #ffffff;
 
-        /* Purple glow */
-        .gift-card::before {
-            content: "";
-            position: absolute;
+    border-radius: 45% 45% 40% 40%;
 
-            width: 420px;
-            height: 420px;
+    position: relative;
+}
 
-            top: -230px;
-            left: 50%;
+.discord-logo-icon::before,
+.discord-logo-icon::after {
+    content: "";
 
-            transform: translateX(-50%);
+    position: absolute;
 
-            background: #5865f2;
-            filter: blur(110px);
-            opacity: 0.35;
+    width: 6px;
+    height: 6px;
 
-            pointer-events: none;
-        }
+    background: #313338;
 
-        .content {
-            position: relative;
-            z-index: 2;
+    border-radius: 50%;
 
-            width: 100%;
+    top: 10px;
+}
 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+.discord-logo-icon::before {
+    left: 8px;
+}
 
-        /* Discord-style caps heading */
-        .title {
-            margin: 0;
+.discord-logo-icon::after {
+    right: 8px;
+}
 
-            max-width: 430px;
+/* =========================
+   CARD
+========================= */
 
-            text-align: center;
+.card {
+    width: min(480px, calc(100vw - 32px));
 
-            font-size: clamp(25px, 6vw, 38px);
-            line-height: 1.12;
+    background: #2b2d31;
 
-            font-weight: 900;
-            letter-spacing: -1px;
+    border-radius: 8px;
 
-            text-transform: uppercase;
+    padding: 42px 40px 38px;
 
-            color: white;
+    text-align: center;
 
-            text-shadow:
-                0 3px 10px rgba(0, 0, 0, 0.25);
-        }
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.35);
+}
 
-        .title .thing {
-            color: #a9b0ff;
-        }
+/* =========================
+   DISCORD ICON
+========================= */
 
-        /* Main squircle */
-        .gift-box {
-            width: 310px;
-            height: 310px;
+.card-discord-icon {
+    width: 46px;
+    height: 36px;
 
-            margin-top: 42px;
+    background: #ffffff;
 
-            border-radius: 76px;
+    border-radius: 45%;
 
-            position: relative;
+    margin: 0 auto 25px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    position: relative;
+}
 
-            background:
-                linear-gradient(
-                    145deg,
-                    #6975ff 0%,
-                    #5865f2 45%,
-                    #7b4dff 100%
-                );
+.card-discord-icon::before,
+.card-discord-icon::after {
+    content: "";
 
-            box-shadow:
-                0 25px 55px rgba(0, 0, 0, 0.45),
-                0 0 50px rgba(88, 101, 242, 0.35),
-                inset 0 2px 2px rgba(255, 255, 255, 0.25);
+    position: absolute;
 
-            overflow: hidden;
-        }
+    width: 7px;
+    height: 7px;
 
-        /* Subtle shine */
-        .gift-box::before {
-            content: "";
+    background: #2b2d31;
 
-            position: absolute;
+    border-radius: 50%;
 
-            width: 180%;
-            height: 80px;
+    top: 13px;
+}
 
-            background: rgba(255, 255, 255, 0.1);
+.card-discord-icon::before {
+    left: 11px;
+}
 
-            transform: rotate(-35deg);
+.card-discord-icon::after {
+    right: 11px;
+}
 
-            top: 35px;
-            left: -40%;
+/* =========================
+   GIFT IMAGE
+========================= */
 
-            pointer-events: none;
-        }
+.gift-icon {
+    width: 100px;
+    height: 100px;
 
-        /* Image circle */
-        .gift-image-container {
-            width: 190px;
-            height: 190px;
+    margin: 0 auto 28px;
 
-            border-radius: 50%;
+    border-radius: 22px;
 
-            padding: 7px;
+    background: #5865f2;
 
-            background: rgba(255, 255, 255, 0.95);
+    overflow: hidden;
 
-            box-shadow:
-                0 12px 30px rgba(0, 0, 0, 0.3),
-                0 0 0 5px rgba(255, 255, 255, 0.15);
+    box-shadow:
+        0 8px 20px rgba(88, 101, 242, 0.25);
+}
 
-            position: relative;
-            z-index: 2;
+.gift-icon img {
+    width: 100%;
+    height: 100%;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    object-fit: cover;
 
-            overflow: hidden;
-        }
+    display: block;
+}
 
-        .gift-image {
-            width: 100%;
-            height: 100%;
+/* =========================
+   TEXT
+========================= */
 
-            border-radius: 50%;
+h1 {
+    margin: 0;
 
-            object-fit: cover;
+    font-size: 25px;
+    line-height: 1.3;
 
-            display: block;
-        }
+    font-weight: 700;
+}
 
-        /* Default image when no URL is supplied */
-        .default-icon {
-            width: 100%;
-            height: 100%;
+.gift-name {
+    margin-top: 8px;
 
-            border-radius: 50%;
+    font-size: 17px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    color: #b5bac1;
+}
 
-            background: #2b2d31;
+.gift-name strong {
+    color: #ffffff;
 
-            font-size: 72px;
-            font-weight: 900;
+    font-weight: 600;
+}
 
-            color: white;
-        }
+/* =========================
+   BUTTON
+========================= */
 
-        .subtitle {
-            margin-top: 35px;
+.accept-button {
+    width: 100%;
+    height: 48px;
 
-            color: rgba(255, 255, 255, 0.65);
+    margin-top: 28px;
 
-            font-size: 14px;
-            text-align: center;
-        }
+    border: 0;
+    border-radius: 3px;
 
-        .redeem-button {
-            margin-top: 25px;
+    background: #5865f2;
 
-            border: 0;
-            border-radius: 7px;
+    color: #ffffff;
 
-            padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
 
-            background: #5865f2;
-            color: white;
+    cursor: pointer;
 
-            font-size: 16px;
-            font-weight: 700;
+    transition:
+        background 0.15s ease,
+        transform 0.1s ease;
+}
 
-            cursor: pointer;
+.accept-button:hover {
+    background: #4752c4;
+}
 
-            box-shadow:
-                0 8px 20px rgba(88, 101, 242, 0.3);
+.accept-button:active {
+    transform: translateY(1px);
+}
 
-            transition:
-                transform 0.15s ease,
-                background 0.15s ease;
-        }
+/* =========================
+   CLAIMED TEXT
+========================= */
 
-        .redeem-button:hover {
-            background: #4752c4;
-            transform: translateY(-2px);
-        }
+.claimed {
+    margin-top: 18px;
 
-        .redeem-button:active {
-            transform: translateY(0);
-        }
+    color: #b5bac1;
 
-        /* Mobile */
-        @media (max-width: 600px) {
-            .gift-card {
-                min-height: 560px;
-                padding: 45px 20px 35px;
-                border-radius: 24px;
-            }
+    font-size: 14px;
+}
 
-            .gift-box {
-                width: 245px;
-                height: 245px;
-                border-radius: 62px;
-                margin-top: 32px;
-            }
+/* =========================
+   MOBILE
+========================= */
 
-            .gift-image-container {
-                width: 155px;
-                height: 155px;
-            }
+@media (max-width: 600px) {
 
-            .subtitle {
-                margin-top: 25px;
-            }
-        }
+    .discord-logo {
+        top: 22px;
+        left: 22px;
 
-        @media (max-height: 700px) {
-            .gift-card {
-                min-height: auto;
-                padding-top: 30px;
-                padding-bottom: 30px;
-            }
+        font-size: 19px;
+    }
 
-            .gift-box {
-                margin-top: 25px;
-                width: 220px;
-                height: 220px;
-            }
-
-            .gift-image-container {
-                width: 140px;
-                height: 140px;
-            }
-
-            .subtitle {
-                margin-top: 20px;
-            }
-
-            .redeem-button {
-                margin-top: 15px;
-            }
-        }
-    </style>
+    .card {
+        padding: 35px 25px 30px;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<div class="page">
+<div class="background"></div>
 
-    <div class="gift-card">
+<!-- Discord-style logo -->
+<div class="discord-logo">
+    <div class="discord-logo-icon"></div>
+    <span>Discord</span>
+</div>
 
-        <div class="content">
+<!-- Gift card -->
+<div class="card">
 
-            <h1 class="title">
-                YOU HAVE BEEN GIFTED A
-                <span class="thing" id="giftName">THING</span>!
-            </h1>
+    <div class="card-discord-icon"></div>
 
-            <div class="gift-box">
+    <!-- Image comes from ?image= -->
+    <div class="gift-icon">
+        <img
+            id="giftImage"
+            src=""
+            alt=""
+        >
+    </div>
 
-                <div class="gift-image-container" id="imageContainer">
-                    <div class="default-icon">?</div>
-                </div>
+    <h1>You've been gifted</h1>
 
-            </div>
+    <!-- Name comes from ?name= -->
+    <div class="gift-name">
+        <strong id="giftName">Nerd</strong>
+    </div>
 
-            <div class="subtitle">
-                Someone has sent you a gift.
-            </div>
+    <button
+        id="acceptButton"
+        class="accept-button"
+    >
+        Woo! Accept Gift
+    </button>
 
-            <button class="redeem-button">
-                Redeem Gift
-            </button>
-
-        </div>
-
+    <div
+        id="claimedText"
+        class="claimed"
+    >
+        This gift has already been claimed.
     </div>
 
 </div>
 
 <script>
+/*
+    URL PARAMETERS
+    ================================
+
+    ?name=Nerd
+
+    ?image=https://example.com/image.png
+
+    ?claimed=false
+
+    Example:
+
+    https://your-site.com/?name=Nerd&image=https%3A%2F%2Fexample.com%2Fnerd.png
+
+    Example with unclaimed gift:
+
+    https://your-site.com/?name=Nerd&image=https%3A%2F%2Fexample.com%2Fnerd.png&claimed=false
+*/
+
+const params = new URLSearchParams(window.location.search);
+
+/* =========================
+   NAME
+========================= */
+
+const name = params.get("name");
+
+if (name && name.trim() !== "") {
+    document.getElementById("giftName").textContent = name;
+}
+
+/* =========================
+   IMAGE
+========================= */
+
+const image = params.get("image");
+
+const giftImage = document.getElementById("giftImage");
+
+if (image && image.trim() !== "") {
+
+    giftImage.src = image;
+
+} else {
+
     /*
-        URL FORMAT:
-
-        ?=fakenitro
-
-        OR
-
-        ?=fakenitro&image-url=https://example.com/image.png
-
-        The first parameter becomes the gift name.
-        image-url becomes the image.
+        Default image if no ?image= is provided.
     */
 
-    const params = new URLSearchParams(window.location.search);
+    giftImage.src =
+        "https://cdn.discordapp.com/embed/avatars/0.png";
+}
 
-    // Get everything after the "?="
-    let giftName = "THING";
+/* =========================
+   CLAIMED / UNCLAIMED
+========================= */
 
-    const rawQuery = window.location.search.substring(1);
+const claimed = params.get("claimed");
 
-    if (rawQuery.startsWith("=")) {
-        const queryParts = rawQuery.substring(1).split("&");
+const claimedText =
+    document.getElementById("claimedText");
 
-        if (queryParts[0]) {
-            giftName = decodeURIComponent(queryParts[0]);
-        }
+const acceptButton =
+    document.getElementById("acceptButton");
+
+if (claimed === "false") {
+
+    claimedText.style.display = "none";
+
+    acceptButton.disabled = false;
+
+} else {
+
+    /*
+        Default state:
+        gift is already claimed.
+    */
+
+    acceptButton.disabled = true;
+}
+
+/* =========================
+   ACCEPT BUTTON
+========================= */
+
+acceptButton.addEventListener("click", function () {
+
+    if (claimed === "false") {
+
+        alert("Gift accepted!");
+
     }
 
-    // Put gift name into heading
-    document.getElementById("giftName").textContent = giftName;
-
-    // Get image URL
-    const imageURL = params.get("image-url");
-
-    if (imageURL) {
-        const container = document.getElementById("imageContainer");
-
-        const image = document.createElement("img");
-
-        image.className = "gift-image";
-        image.alt = "";
-        image.src = imageURL;
-
-        // If image fails, keep the default ?
-        image.onerror = function () {
-            container.innerHTML = '<div class="default-icon">?</div>';
-        };
-
-        container.innerHTML = "";
-        container.appendChild(image);
-    }
+});
 </script>
 
 </body>

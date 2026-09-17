@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Gift</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 50% 35%, #34395f 0%, #202236 38%, #111218 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page {
+            width: 100%;
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Main gift card */
+        .gift-card {
+            width: min(92vw, 520px);
+            min-height: 610px;
+
+            border-radius: 28px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255, 255, 255, 0.12),
+                    rgba(255, 255, 255, 0.035)
+                );
+
+            border: 1px solid rgba(255, 255, 255, 0.1);
+
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.55),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            padding: 58px 35px 42px;
+
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Purple glow */
+        .gift-card::before {
+            content: "";
+            position: absolute;
+
+            width: 420px;
+            height: 420px;
+
+            top: -230px;
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            background: #5865f2;
+            filter: blur(110px);
+            opacity: 0.35;
+
+            pointer-events: none;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+
+            width: 100%;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Discord-style caps heading */
+        .title {
+            margin: 0;
+
+            max-width: 430px;
+
+            text-align: center;
+
+            font-size: clamp(25px, 6vw, 38px);
+            line-height: 1.12;
+
+            font-weight: 900;
+            letter-spacing: -1px;
+
+            text-transform: uppercase;
+
+            color: white;
+
+            text-shadow:
+                0 3px 10px rgba(0, 0, 0, 0.25);
+        }
+
+        .title .thing {
+            color: #a9b0ff;
+        }
+
+        /* Main squircle */
+        .gift-box {
+            width: 310px;
+            height: 310px;
+
+            margin-top: 42px;
+
+            border-radius: 76px;
+
+            position: relative;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #6975ff 0%,
+                    #5865f2 45%,
+                    #7b4dff 100%
+                );
+
+            box-shadow:
+                0 25px 55px rgba(0, 0, 0, 0.45),
+                0 0 50px rgba(88, 101, 242, 0.35),
+                inset 0 2px 2px rgba(255, 255, 255, 0.25);
+
+            overflow: hidden;
+        }
+
+        /* Subtle shine */
+        .gift-box::before {
+            content: "";
+
+            position: absolute;
+
+            width: 180%;
+            height: 80px;
+
+            background: rgba(255, 255, 255, 0.1);
+
+            transform: rotate(-35deg);
+
+            top: 35px;
+            left: -40%;
+
+            pointer-events: none;
+        }
+
+        /* Image circle */
+        .gift-image-container {
+            width: 190px;
+            height: 190px;
+
+            border-radius: 50%;
+
+            padding: 7px;
+
+            background: rgba(255, 255, 255, 0.95);
+
+            box-shadow:
+                0 12px 30px rgba(0, 0, 0, 0.3),
+                0 0 0 5px rgba(255, 255, 255, 0.15);
+
+            position: relative;
+            z-index: 2;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+        }
+
+        .gift-image {
+            width: 100%;
+            height: 100%;
+
+            border-radius: 50%;
+
+            object-fit: cover;
+
+            display: block;
+        }
+
+        /* Default image when no URL is supplied */
+        .default-icon {
+            width: 100%;
+            height: 100%;
+
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #2b2d31;
+
+            font-size: 72px;
+            font-weight: 900;
+
+            color: white;
+        }
+
+        .subtitle {
+            margin-top: 35px;
+
+            color: rgba(255, 255, 255, 0.65);
+
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .redeem-button {
+            margin-top: 25px;
+
+            border: 0;
+            border-radius: 7px;
+
+            padding: 14px 32px;
+
+            background: #5865f2;
+            color: white;
+
+            font-size: 16px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 8px 20px rgba(88, 101, 242, 0.3);
+
+            transition:
+                transform 0.15s ease,
+                background 0.15s ease;
+        }
+
+        .redeem-button:hover {
+            background: #4752c4;
+            transform: translateY(-2px);
+        }
+
+        .redeem-button:active {
+            transform: translateY(0);
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            .gift-card {
+                min-height: 560px;
+                padding: 45px 20px 35px;
+                border-radius: 24px;
+            }
+
+            .gift-box {
+                width: 245px;
+                height: 245px;
+                border-radius: 62px;
+                margin-top: 32px;
+            }
+
+            .gift-image-container {
+                width: 155px;
+                height: 155px;
+            }
+
+            .subtitle {
+                margin-top: 25px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .gift-card {
+                min-height: auto;
+                padding-top: 30px;
+                padding-bottom: 30px;
+            }
+
+            .gift-box {
+                margin-top: 25px;
+                width: 220px;
+                height: 220px;
+            }
+
+            .gift-image-container {
+                width: 140px;
+                height: 140px;
+            }
+
+            .subtitle {
+                margin-top: 20px;
+            }
+
+            .redeem-button {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <div class="gift-card">
+
+        <div class="content">
+
+            <h1 class="title">
+                YOU HAVE BEEN GIFTED A
+                <span class="thing" id="giftName">THING</span>!
+            </h1>
+
+            <div class="gift-box">
+
+                <div class="gift-image-container" id="imageContainer">
+                    <div class="default-icon">?</div>
+                </div>
+
+            </div>
+
+            <div class="subtitle">
+                Someone has sent you a gift.
+            </div>
+
+            <button class="redeem-button">
+                Redeem Gift
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    /*
+        URL FORMAT:
+
+        ?=fakenitro
+
+        OR
+
+        ?=fakenitro&image-url=https://example.com/image.png
+
+        The first parameter becomes the gift name.
+        image-url becomes the image.
+    */
+
+    const params = new URLSearchParams(window.location.search);
+
+    // Get everything after the "?="
+    let giftName = "THING";
+
+    const rawQuery = window.location.search.substring(1);
+
+    if (rawQuery.startsWith("=")) {
+        const queryParts = rawQuery.substring(1).split("&");
+
+        if (queryParts[0]) {
+            giftName = decodeURIComponent(queryParts[0]);
+        }
+    }
+
+    // Put gift name into heading
+    document.getElementById("giftName").textContent = giftName;
+
+    // Get image URL
+    const imageURL = params.get("image-url");
+
+    if (imageURL) {
+        const container = document.getElementById("imageContainer");
+
+        const image = document.createElement("img");
+
+        image.className = "gift-image";
+        image.alt = "";
+        image.src = imageURL;
+
+        // If image fails, keep the default ?
+        image.onerror = function () {
+            container.innerHTML = '<div class="default-icon">?</div>';
+        };
+
+        container.innerHTML = "";
+        container.appendChild(image);
+    }
+</script>
+
+</body>
+</html>

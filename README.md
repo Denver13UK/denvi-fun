@@ -1,2 +1,0 @@
-# denvifun
-Fun projects

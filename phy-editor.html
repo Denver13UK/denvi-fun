@@ -77,117 +77,227 @@ input,select{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf
 const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
 const objectsEl=document.getElementById("objects"),inspector=document.getElementById("inspector");
 const fileInput=document.getElementById("fileInput"),statusEl=document.getElementById("status"),fileNameEl=document.getElementById("fileName");
-let state={format:"PHY",version:1,objects:[]};
+
+let state={format:"PhysikLab Save",version:4,stage:{},sprites:[],clones:[]};
 let selected=null,drag=null,fileName="untitled.phy",dirty=false;
 let view={x:0,y:0,zoom:1};
 
 function uid(){return "obj_"+Math.random().toString(36).slice(2,9)+"_"+Date.now().toString(36)}
-function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function setStatus(s){statusEl.textContent=s}
 function markDirty(){dirty=true;setStatus("Unsaved changes")}
-function newFile(){if(dirty&&!confirm("Discard unsaved changes?"))return;state={format:"PHY",version:1,objects:[]};selected=null;fileName="untitled.phy";dirty=false;renderAll();setStatus("New file")}
+
+function newFile(){
+ if(dirty&&!confirm("Discard unsaved changes?"))return;
+ state={format:"PhysikLab Save",version:4,stage:{},sprites:[],clones:[]};
+ selected=null;fileName="untitled.phy";dirty=false;renderAll();setStatus("New PhysikLab file");
+}
 function openFile(){fileInput.click()}
+
 fileInput.onchange=async e=>{
- const f=e.target.files[0]; if(!f)return;
+ const f=e.target.files[0];if(!f)return;
  try{
   const data=JSON.parse(await f.text());
-  if(!Array.isArray(data.objects))throw new Error("This is not a valid PHY file.");
-  state={format:"PHY",version:data.version||1,objects:data.objects.map(normalize)};
-  fileName=f.name.endsWith(".phy")?f.name:f.name.replace(/\.[^.]+$/,"")+".phy";
-  selected=null;dirty=false;renderAll();setStatus("Loaded");
+  if(data.format!=="PhysikLab Save"||!Array.isArray(data.sprites)||!Array.isArray(data.clones))
+    throw new Error("This is not a valid PhysikLab Save .phy file.");
+  state=structuredClone(data);
+  state.version=state.version||4;
+  state.stage=state.stage||{};
+  state.sprites=state.sprites||[];
+  state.clones=state.clones||[];
+  fileName=f.name.endsWith(".phy")?f.name:f.name+".phy";
+  selected=null;dirty=false;renderAll();setStatus("Loaded PhysikLab save");
  }catch(err){alert("Could not open file.\n\n"+err.message)}
  fileInput.value="";
 };
+
 function saveFile(){
  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fileName.endsWith(".phy")?fileName:fileName+".phy";a.click();
- setTimeout(()=>URL.revokeObjectURL(a.href),500);dirty=false;setStatus("Saved");
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+ a.download=fileName.endsWith(".phy")?fileName:fileName+".phy";a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),500);
+ dirty=false;setStatus("Saved");
 }
-function normalize(o){
- return {id:o.id||uid(),name:o.name||"Object",type:o.type||"item",x:num(o.x),y:num(o.y),width:num(o.width,40),height:num(o.height,40),rotation:num(o.rotation),color:o.color||"#58a6ff",visible:o.visible!==false};
-}
+
 function num(v,d=0){v=Number(v);return Number.isFinite(v)?v:d}
-function addObject(type="item",x=0,y=0){
- const names={item:"Item",spawner:"Spawner"};
- const o=normalize({id:uid(),name:names[type]||"Object",type,x,y,width:type==="spawner"?70:40,height:type==="spawner"?40:40,color:type==="spawner"?"#f2cc60":"#58a6ff"});
- state.objects.push(o);selected=o.id;markDirty();renderAll();
+function getAll(){
+ return [
+  ...state.sprites.map((o,i)=>({...o,_kind:"sprite",_index:i,_id:"sprite_"+i})),
+  ...state.clones.map((o,i)=>({...o,_kind:"clone",_index:i,_id:"clone_"+i}))
+ ];
 }
-function getSelected(){return state.objects.find(o=>o.id===selected)||null}
+function getSelected(){
+ const all=getAll();return all.find(o=>o._id===selected)||null;
+}
+function displayName(o){
+ return o.name||o.spriteName||o.originalName||o.type||"Object";
+}
+function objectType(o){return o._kind==="clone"?"clone":"sprite"}
+
 function renderList(){
  objectsEl.innerHTML="";
- if(!state.objects.length){objectsEl.innerHTML='<div class="empty">No objects yet.<br>Add one from the inspector.</div>';return}
- for(const o of state.objects){
-  const b=document.createElement("button");b.className="obj"+(o.id===selected?" active":"");
-  b.innerHTML='<div class="obj-icon">'+(o.type==="spawner"?"✦":"◆")+'</div><div class="obj-text"><div class="obj-name">'+esc(o.name)+'</div><div class="obj-type">'+esc(o.type)+' • '+o.x+', '+o.y+'</div></div>';
-  b.onclick=()=>{selected=o.id;renderAll()};
+ const all=getAll();
+ if(!all.length){
+  objectsEl.innerHTML='<div class="empty">No saved objects.<br>Add one from the inspector.</div>';return;
+ }
+ for(const o of all){
+  const b=document.createElement("button");
+  b.className="obj"+(o._id===selected?" active":"");
+  const n=displayName(o);
+  b.innerHTML='<div class="obj-icon">'+(o._kind==="clone"?"◈":"◆")+'</div>'+
+    '<div class="obj-text"><div class="obj-name">'+esc(n)+'</div>'+
+    '<div class="obj-type">'+esc(objectType(o))+' • '+num(o.x)+', '+num(o.y)+'</div></div>';
+  b.onclick=()=>{selected=o._id;renderAll()};
   objectsEl.appendChild(b);
  }
 }
+
 function renderInspector(){
  const o=getSelected();
- if(!o){inspector.innerHTML='<div class="empty">Select an object to edit it.</div>';return}
+ if(!o){
+  inspector.innerHTML='<div class="empty">Select an object to edit it.</div>'+
+   '<div class="divider"></div>'+
+   '<button onclick="addObjectPrompt()" style="width:100%;margin-bottom:8px">+ Add Item</button>'+
+   '<button onclick="addSpawnerPrompt()" style="width:100%">+ Add Spawner</button>';
+  return;
+ }
+ const idx=o._index,kind=o._kind;
  inspector.innerHTML=`
- <div class="section"><label>Name</label><input id="i-name" value="${esc(o.name)}"></div>
- <div class="section"><label>Type</label><select id="i-type"><option value="item" ${o.type==="item"?"selected":""}>Item</option><option value="spawner" ${o.type==="spawner"?"selected":""}>Spawner</option></select></div>
- <div class="section"><div class="grid2"><div><label>X</label><input id="i-x" type="number" step="0.1" value="${o.x}"></div><div><label>Y</label><input id="i-y" type="number" step="0.1" value="${o.y}"></div></div></div>
- <div class="section"><div class="grid2"><div><label>Width</label><input id="i-w" type="number" min="1" step="1" value="${o.width}"></div><div><label>Height</label><input id="i-h" type="number" min="1" step="1" value="${o.height}"></div></div></div>
- <div class="section"><label>Rotation</label><input id="i-r" type="number" step="1" value="${o.rotation}"></div>
- <div class="section"><label>Color</label><input id="i-color" type="color" value="${/^#[0-9a-f]{6}$/i.test(o.color)?o.color:"#58a6ff"}"></div>
+ <div class="section"><label>Name</label><input id="i-name" value="${esc(displayName(o))}"></div>
+ <div class="section"><label>Kind</label><input value="${kind}" disabled></div>
+ <div class="section"><div class="grid2">
+   <div><label>X</label><input id="i-x" type="number" step="0.1" value="${num(o.x)}"></div>
+   <div><label>Y</label><input id="i-y" type="number" step="0.1" value="${num(o.y)}"></div>
+ </div></div>
+ <div class="section"><div class="grid2">
+   <div><label>Width</label><input id="i-w" type="number" min="1" step="1" value="${num(o.width,40)}"></div>
+   <div><label>Height</label><input id="i-h" type="number" min="1" step="1" value="${num(o.height,40)}"></div>
+ </div></div>
+ <div class="section"><label>Direction / Rotation</label><input id="i-r" type="number" step="1" value="${num(o.direction,o.rotation||90)}"></div>
+ <div class="section"><label>Color (editor only)</label><input id="i-color" type="color" value="${/^#[0-9a-f]{6}$/i.test(o._editorColor||"")?o._editorColor:"#58a6ff"}"></div>
  <div class="divider"></div>
- <div class="row"><button onclick="duplicateSelected()">Duplicate</button><button class="danger" onclick="deleteSelected()">Delete</button></div>
+ <button onclick="duplicateSelected()" style="width:100%;margin-bottom:8px">Duplicate</button>
+ <button class="danger" onclick="deleteSelected()" style="width:100%;margin-bottom:8px">Delete</button>
  <div class="divider"></div>
- <button onclick="addObject('item',0,0)" style="width:100%;margin-bottom:8px">+ Item at 0, 0</button>
- <button onclick="addObject('spawner',0,0)" style="width:100%">+ Spawner at 0, 0</button>`;
- ["name","type","x","y","w","h","r","color"].forEach(k=>{
-  const el=document.getElementById("i-"+k);if(!el)return;
-  el.oninput=()=>{
-   const key={name:"name",type:"type",x:"x",y:"y",w:"width",h:"height",r:"rotation",color:"color"}[k];
-   o[key]=(k==="name"||k==="type"||k==="color")?el.value:num(el.value);
-   markDirty();renderList();draw();
-  };
- });
+ <button onclick="addObjectPrompt()" style="width:100%;margin-bottom:8px">+ Add Item</button>
+ <button onclick="addSpawnerPrompt()" style="width:100%">+ Add Spawner</button>`;
+ 
+ const bind=(id,fn)=>{const el=document.getElementById(id);if(el)el.oninput=fn};
+ bind("i-name",()=>{o.name=document.getElementById("i-name").value;markDirty();renderList()});
+ bind("i-x",()=>{o.x=num(document.getElementById("i-x").value);markDirty();renderList();draw()});
+ bind("i-y",()=>{o.y=num(document.getElementById("i-y").value);markDirty();renderList();draw()});
+ bind("i-w",()=>{o.width=num(document.getElementById("i-w").value,40);markDirty();draw()});
+ bind("i-h",()=>{o.height=num(document.getElementById("i-h").value,40);markDirty();draw()});
+ bind("i-r",()=>{if("direction" in o)o.direction=num(document.getElementById("i-r").value);else o.rotation=num(document.getElementById("i-r").value);markDirty();draw()});
+ bind("i-color",()=>{o._editorColor=document.getElementById("i-color").value;markDirty();draw()});
 }
-function duplicateSelected(){const o=getSelected();if(!o)return;const n=normalize({...o,id:uid(),name:o.name+" Copy",x:o.x+20,y:o.y+20});state.objects.push(n);selected=n.id;markDirty();renderAll()}
-function deleteSelected(){if(!selected)return;state.objects=state.objects.filter(o=>o.id!==selected);selected=null;markDirty();renderAll()}
-function resize(){const r=canvas.getBoundingClientRect(),d=devicePixelRatio||1;canvas.width=r.width*d;canvas.height=r.height*d;ctx.setTransform(d,0,0,d,0,0);draw()}
-function worldToScreen(x,y){const w=canvas.clientWidth,h=canvas.clientHeight;return {x:w/2+(x-view.x)*view.zoom,y:h/2-(y-view.y)*view.zoom}}
-function screenToWorld(x,y){const w=canvas.clientWidth,h=canvas.clientHeight;return {x:(x-w/2)/view.zoom+view.x,y:-((y-h/2)/view.zoom)+view.y}}
+
+function makeBase(name,kind){
+ return {
+   name:name,
+   isStage:false,
+   isOriginal:kind==="sprite",
+   x:0,y:0,direction:90,size:100,visible:true,costume:0,volume:100,
+   rotationStyle:"all around",effects:{},variables:{},lists:{}
+ };
+}
+function addObjectPrompt(){
+ const name=prompt('Name of the item/sprite to add:\n\nExample: box\nThis will be saved as: items//box');
+ if(name===null)return;
+ const clean=name.trim();if(!clean)return;
+ const full=clean.startsWith("items//")?clean:"items//"+clean;
+ const o=makeBase(full,"sprite");
+ state.sprites.push(o);
+ selected="sprite_"+(state.sprites.length-1);
+ markDirty();renderAll();
+}
+function addSpawnerPrompt(){
+ const name=prompt('Name of the spawner sprite:\n\nExample: box\nThis will be saved as: items//box');
+ if(name===null)return;
+ const clean=name.trim();if(!clean)return;
+ const full=clean.startsWith("items//")?clean:"items//"+clean;
+ const o=makeBase(full,"sprite");
+ o.x=0;o.y=0;o._editorColor="#f2cc60";
+ state.sprites.push(o);
+ selected="sprite_"+(state.sprites.length-1);
+ markDirty();renderAll();
+}
+function duplicateSelected(){
+ const o=getSelected();if(!o)return;
+ const copy=JSON.parse(JSON.stringify(o));
+ delete copy._kind;delete copy._index;delete copy._id;
+ copy.x=num(copy.x)+20;copy.y=num(copy.y)+20;
+ if(o._kind==="sprite"){state.sprites.push(copy);selected="sprite_"+(state.sprites.length-1)}
+ else{state.clones.push(copy);selected="clone_"+(state.clones.length-1)}
+ markDirty();renderAll();
+}
+function deleteSelected(){
+ const o=getSelected();if(!o)return;
+ if(o._kind==="sprite")state.sprites.splice(o._index,1);
+ else state.clones.splice(o._index,1);
+ selected=null;markDirty();renderAll();
+}
+
+function resize(){
+ const r=canvas.getBoundingClientRect(),d=devicePixelRatio||1;
+ canvas.width=r.width*d;canvas.height=r.height*d;ctx.setTransform(d,0,0,d,0,0);draw();
+}
+function worldToScreen(x,y){
+ const w=canvas.clientWidth,h=canvas.clientHeight;
+ return {x:w/2+(x-view.x)*view.zoom,y:h/2-(y-view.y)*view.zoom};
+}
+function screenToWorld(x,y){
+ const w=canvas.clientWidth,h=canvas.clientHeight;
+ return {x:(x-w/2)/view.zoom+view.x,y:-((y-h/2)/view.zoom)+view.y};
+}
 function draw(){
  const w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);
  ctx.fillStyle="#0b0f14";ctx.fillRect(0,0,w,h);
- const grid=50*view.zoom;
- ctx.beginPath();
+ const grid=50*view.zoom;ctx.beginPath();
  for(let x=w/2-(view.x%50)*view.zoom;x<w;x+=grid){ctx.moveTo(x,0);ctx.lineTo(x,h)}
  for(let y=h/2+(view.y%50)*view.zoom;y<h;y+=grid){ctx.moveTo(0,y);ctx.lineTo(w,y)}
  ctx.strokeStyle="#1b222c";ctx.lineWidth=1;ctx.stroke();
- const origin=worldToScreen(0,0);
- ctx.strokeStyle="#6e7681";ctx.beginPath();ctx.moveTo(origin.x,0);ctx.lineTo(origin.x,h);ctx.moveTo(0,origin.y);ctx.lineTo(w,origin.y);ctx.stroke();
- for(const o of state.objects)drawObject(o);
+ const origin=worldToScreen(0,0);ctx.strokeStyle="#6e7681";ctx.beginPath();
+ ctx.moveTo(origin.x,0);ctx.lineTo(origin.x,h);ctx.moveTo(0,origin.y);ctx.lineTo(w,origin.y);ctx.stroke();
+ for(const o of getAll())drawObject(o);
 }
 function drawObject(o){
  if(o.visible===false)return;
- const p=worldToScreen(o.x,o.y),w=o.width*view.zoom,h=o.height*view.zoom;
- ctx.save();ctx.translate(p.x,p.y);ctx.rotate(-o.rotation*Math.PI/180);
- ctx.fillStyle=o.color;ctx.globalAlpha=o.id===selected?0.9:0.65;
- if(o.type==="spawner"){ctx.fillRect(-w/2,-h/2,w,h);ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.strokeRect(-w/2,-h/2,w,h);ctx.beginPath();ctx.moveTo(-w*.25,0);ctx.lineTo(w*.25,0);ctx.moveTo(0,-h*.25);ctx.lineTo(0,h*.25);ctx.stroke()}
- else{ctx.fillRect(-w/2,-h/2,w,h)}
- if(o.id===selected){ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.strokeRect(-w/2-3,-h/2-3,w+6,h+6)}
+ const p=worldToScreen(num(o.x),num(o.y)),w=Math.max(12,num(o.width,40)*view.zoom),h=Math.max(12,num(o.height,40)*view.zoom);
+ ctx.save();ctx.translate(p.x,p.y);
+ const rot=num(o.direction,90)-90;ctx.rotate(-rot*Math.PI/180);
+ ctx.fillStyle=o._editorColor||(o._kind==="clone"?"#8b949e":"#58a6ff");ctx.globalAlpha=o._id===selected?.9:.55;
+ ctx.fillRect(-w/2,-h/2,w,h);
+ if(o._kind==="clone"){ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.setLineDash([5,4]);ctx.strokeRect(-w/2,-h/2,w,h);ctx.setLineDash([])}
+ if(o._id===selected){ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.strokeRect(-w/2-3,-h/2-3,w+6,h+6)}
  ctx.restore();
 }
 function hitObject(sx,sy){
- for(let i=state.objects.length-1;i>=0;i--){const o=state.objects[i],p=worldToScreen(o.x,o.y),w=o.width*view.zoom,h=o.height*view.zoom;if(Math.abs(sx-p.x)<=w/2+6&&Math.abs(sy-p.y)<=h/2+6)return o}return null
+ const all=getAll();
+ for(let i=all.length-1;i>=0;i--){
+  const o=all[i],p=worldToScreen(num(o.x),num(o.y)),w=Math.max(12,num(o.width,40)*view.zoom),h=Math.max(12,num(o.height,40)*view.zoom);
+  if(Math.abs(sx-p.x)<=w/2+6&&Math.abs(sy-p.y)<=h/2+6)return o;
+ }
+ return null;
 }
 canvas.addEventListener("mousedown",e=>{
  const r=canvas.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,o=hitObject(sx,sy);
- if(o){selected=o.id;drag={o,dx:sx-worldToScreen(o.x,o.y).x,dy:sy-worldToScreen(o.x,o.y).y};renderAll()}
+ if(o){selected=o._id;drag={o,dx:sx-worldToScreen(num(o.x),num(o.y)).x,dy:sy-worldToScreen(num(o.x),num(o.y)).y};renderAll()}
 });
 window.addEventListener("mousemove",e=>{
- if(!drag)return;const r=canvas.getBoundingClientRect(),p=screenToWorld(e.clientX-r.left-drag.dx,e.clientY-r.top-drag.dy);drag.o.x=Math.round(p.x*10)/10;drag.o.y=Math.round(p.y*10)/10;markDirty();renderList();draw()
+ if(!drag)return;
+ const r=canvas.getBoundingClientRect(),p=screenToWorld(e.clientX-r.left-drag.dx,e.clientY-r.top-drag.dy);
+ drag.o.x=Math.round(p.x*10)/10;drag.o.y=Math.round(p.y*10)/10;markDirty();renderList();draw();
 });
-window.addEventListener("mouseup",()=>{drag=null});
-canvas.addEventListener("dblclick",e=>{const r=canvas.getBoundingClientRect(),p=screenToWorld(e.clientX-r.left,e.clientY-r.top);if(!hitObject(e.clientX-r.left,e.clientY-r.top))addObject("item",Math.round(p.x),Math.round(p.y))});
+window.addEventListener("mouseup",()=>drag=null);
+canvas.addEventListener("dblclick",e=>{
+ const r=canvas.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,p=screenToWorld(sx,sy);
+ if(!hitObject(sx,sy)){const name=prompt("Name for item:","box");if(name){const full=name.trim().startsWith("items//")?name.trim():"items//"+name.trim();const o=makeBase(full,"sprite");o.x=Math.round(p.x);o.y=Math.round(p.y);state.sprites.push(o);selected="sprite_"+(state.sprites.length-1);markDirty();renderAll()}}
+});
 canvas.addEventListener("wheel",e=>{
- e.preventDefault();const r=canvas.getBoundingClientRect(),before=screenToWorld(e.clientX-r.left,e.clientY-r.top),factor=e.deltaY<0?1.1:.9;view.zoom=Math.max(.15,Math.min(4,view.zoom*factor));const after=screenToWorld(e.clientX-r.left,e.clientY-r.top);view.x+=before.x-after.x;view.y+=before.y-after.y;draw()
+ e.preventDefault();const r=canvas.getBoundingClientRect(),before=screenToWorld(e.clientX-r.left,e.clientY-r.top),factor=e.deltaY<0?1.1:.9;
+ view.zoom=Math.max(.15,Math.min(4,view.zoom*factor));const after=screenToWorld(e.clientX-r.left,e.clientY-r.top);
+ view.x+=before.x-after.x;view.y+=before.y-after.y;draw();
 },{passive:false});
 window.addEventListener("resize",resize);
 function renderAll(){renderList();renderInspector();draw()}

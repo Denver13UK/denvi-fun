@@ -277,7 +277,7 @@ window.addEventListener("mousemove",e=>{
  const r=canvas.getBoundingClientRect(),p=screenToWorld(e.clientX-r.left-drag.dx,e.clientY-r.top-drag.dy);
  drag.o.x=Math.round(p.x*10)/10;drag.o.y=Math.round(p.y*10)/10;markDirty();renderList();draw();
 });
-window.addEventListener("mouseup",()=>drag=null);
+window.addEventListener("mouseup",()=>{if(drag){drag=null;canvas.style.cursor="crosshair";}});
 canvas.addEventListener("dblclick",e=>{
  const r=canvas.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,p=screenToWorld(sx,sy);
  if(!hitObject(sx,sy)){const name=prompt("Name for item:","box");if(name){const full=name.trim().startsWith("items//")?name.trim():"items//"+name.trim();const o=makeBase(full,"clone");o.isOriginal=false;o.x=Math.round(p.x);o.y=Math.round(p.y);state.clones.push(o);selected="clone_"+(state.clones.length-1);markDirty();renderAll()}}

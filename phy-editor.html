@@ -5,316 +5,139 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PHY Editor</title>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0d1117;color:#e6edf3;overflow:hidden}
-button,input,select{font:inherit}
-button{border:1px solid #30363d;background:#21262d;color:#e6edf3;border-radius:8px;padding:8px 12px;cursor:pointer}
-button:hover{background:#30363d}
-button.primary{background:#238636;border-color:#2ea043}
-button.primary:hover{background:#2ea043}
-.app{height:100%;display:grid;grid-template-rows:58px 1fr}
-.top{display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #30363d;background:#161b22}
-.logo{font-weight:800;font-size:19px;margin-right:8px}
-.logo span{color:#58a6ff}
-.file-name{color:#8b949e;font-size:13px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.workspace{display:grid;grid-template-columns:240px 1fr 280px;min-height:0}
-.panel{background:#161b22;border-right:1px solid #30363d;min-height:0;display:flex;flex-direction:column}
-.panel.right{border-right:0;border-left:1px solid #30363d}
-.panel-title{padding:13px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8b949e;border-bottom:1px solid #30363d}
-.objects{overflow:auto;padding:8px}
-.obj{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:9px 10px;border:1px solid transparent;background:transparent;border-radius:8px;margin-bottom:4px}
-.obj:hover{background:#21262d}
-.obj.active{background:#1f6feb33;border-color:#1f6feb88}
-.obj-icon{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;background:#21262d}
-.obj-text{min-width:0}
-.obj-name{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.obj-type{font-size:11px;color:#8b949e}
-.empty{padding:18px 10px;color:#8b949e;font-size:13px;text-align:center}
-.canvas-wrap{position:relative;overflow:hidden;background:#0b0f14}
-canvas{display:block;width:100%;height:100%;cursor:crosshair}
-.hint{position:absolute;left:14px;bottom:12px;background:#161b22dd;border:1px solid #30363d;padding:7px 10px;border-radius:7px;color:#8b949e;font-size:12px;pointer-events:none}
-.inspector{overflow:auto;padding:14px}
-.section{margin-bottom:18px}
-label{display:block;font-size:11px;color:#8b949e;margin:0 0 5px}
-input,select{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:7px;padding:8px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.row{display:flex;gap:8px}
-.row>*{flex:1}
-.divider{height:1px;background:#30363d;margin:14px 0}
-.danger{border-color:#da3633;color:#ff7b72;background:transparent}
-.status{font-size:12px;color:#8b949e;white-space:nowrap}
-@media(max-width:850px){.workspace{grid-template-columns:190px 1fr}.panel.right{display:none}}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0d1117;color:#e6edf3;overflow:hidden}
+button,input{font:inherit}button{border:1px solid #30363d;background:#21262d;color:#e6edf3;border-radius:7px;padding:8px 11px;cursor:pointer}button:hover{background:#30363d}button.primary{background:#238636;border-color:#2ea043}
+.app{height:100%;display:grid;grid-template-rows:56px 1fr}.top{display:flex;align-items:center;gap:9px;padding:0 13px;border-bottom:1px solid #30363d;background:#161b22}
+.logo{font-weight:800;font-size:18px;margin-right:7px}.logo span{color:#58a6ff}.file-name{flex:1;color:#8b949e;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.status{font-size:12px;color:#8b949e}
+.workspace{height:100%;min-height:0;display:grid;grid-template-columns:235px minmax(640px,1fr) 275px}
+.panel{background:#161b22;min-height:0;display:flex;flex-direction:column;border-right:1px solid #30363d}.right{border-right:0;border-left:1px solid #30363d}.title{padding:12px 13px;border-bottom:1px solid #30363d;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8b949e;text-transform:uppercase}
+.objects{padding:8px;overflow:auto}.obj{width:100%;display:flex;align-items:center;gap:9px;text-align:left;margin-bottom:4px;background:transparent;border-color:transparent}.obj.active{background:#1f6feb33;border-color:#1f6feb88}.icon{width:25px;height:25px;display:grid;place-items:center;background:#21262d;border-radius:6px}.objtext{min-width:0}.name{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sub{font-size:11px;color:#8b949e}
+.center{position:relative;min-width:0;min-height:0;background:#090c10;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#canvas{display:block;background:#fff;box-shadow:0 0 0 1px #30363d,0 12px 45px #0008;touch-action:none;user-select:none}
+.hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#161b22dd;border:1px solid #30363d;color:#8b949e;padding:7px 10px;border-radius:7px;font-size:12px;pointer-events:none;white-space:nowrap}
+.inspector{padding:13px;overflow:auto}.empty{padding:18px 8px;color:#8b949e;text-align:center;font-size:13px}.section{margin-bottom:15px}label{display:block;color:#8b949e;font-size:11px;margin-bottom:5px}input{width:100%;padding:8px;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:7px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.divider{height:1px;background:#30363d;margin:14px 0}.danger{color:#ff7b72;border-color:#da3633;background:transparent}.add{width:100%}
+@media(max-width:1050px){.workspace{grid-template-columns:190px minmax(500px,1fr) 240px}}@media(max-width:800px){.workspace{grid-template-columns:180px 1fr}.right{display:none}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="top">
-  <div class="logo">PHY <span>Editor</span></div>
-  <button onclick="newFile()">New</button>
-  <button onclick="openFile()">Open .phy</button>
-  <button class="primary" onclick="saveFile()">Save .phy</button>
-  <div class="file-name" id="fileName">untitled.phy</div>
-  <div class="status" id="status">Ready</div>
+<div class="logo">PHY <span>Editor</span></div>
+<button onclick="newFile()">New</button><button onclick="openFile()">Open .phy</button><button class="primary" onclick="saveFile()">Save .phy</button>
+<div class="file-name" id="fileName">untitled.phy</div><div class="status" id="status">Ready</div>
 </header>
 <div class="workspace">
-  <aside class="panel">
-    <div class="panel-title">Objects</div>
-    <div class="objects" id="objects"></div>
-  </aside>
-  <main class="canvas-wrap">
-    <canvas id="canvas"></canvas>
-    <div class="hint">Drag objects • Double-click empty space to add an Item</div>
-  </main>
-  <aside class="panel right">
-    <div class="panel-title">Inspector</div>
-    <div class="inspector" id="inspector">
-      <div class="empty">Select an object to edit it.</div>
-    </div>
-  </aside>
+<aside class="panel"><div class="title">Items</div><div class="objects" id="objects"></div></aside>
+<main class="center" id="center"><canvas id="canvas" width="640" height="360"></canvas><div class="hint">640 × 360 • Drag items to move them</div></main>
+<aside class="panel right"><div class="title">Inspector</div><div class="inspector" id="inspector"></div></aside>
 </div>
 <input id="fileInput" type="file" accept=".phy,.json" hidden>
 <script>
-const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
-const objectsEl=document.getElementById("objects"),inspector=document.getElementById("inspector");
-const fileInput=document.getElementById("fileInput"),statusEl=document.getElementById("status"),fileNameEl=document.getElementById("fileName");
+const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d"),center=document.getElementById("center");
+const objectsEl=document.getElementById("objects"),inspector=document.getElementById("inspector"),fileInput=document.getElementById("fileInput"),statusEl=document.getElementById("status"),fileNameEl=document.getElementById("fileName");
+let state={format:"PhysikLab Save",version:4,stage:{},sprites:[],clones:[]},selected=null,drag=null,fileName="untitled.phy",dirty=false;
 
-let state={format:"PhysikLab Save",version:4,stage:{},sprites:[],clones:[]};
-let selected=null,drag=null,fileName="untitled.phy",dirty=false;
-let view={x:0,y:0,zoom:1};
-
-function uid(){return "obj_"+Math.random().toString(36).slice(2,9)+"_"+Date.now().toString(36)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function setStatus(s){statusEl.textContent=s}
-function markDirty(){dirty=true;setStatus("Unsaved changes")}
+function n(v,d=0){v=Number(v);return Number.isFinite(v)?v:d}
+function markDirty(){dirty=true;statusEl.textContent="Unsaved changes"}
+function cleanName(v){v=String(v??"").trim();return v.startsWith("items//")?v:"items//"+v}
+function refList(){
+ const a=[];
+ state.sprites.forEach((o,i)=>{if(String(o.name||"").startsWith("items//"))a.push({o,kind:"sprite",index:i,id:"s"+i})});
+ state.clones.forEach((o,i)=>{if(String(o.name||"").startsWith("items//"))a.push({o,kind:"clone",index:i,id:"c"+i})});
+ return a;
+}
+function selectedRef(){return refList().find(x=>x.id===selected)||null}
 
-function newFile(){
- if(dirty&&!confirm("Discard unsaved changes?"))return;
- state={format:"PhysikLab Save",version:4,stage:{},sprites:[],clones:[]};
- selected=null;fileName="untitled.phy";dirty=false;renderAll();setStatus("New PhysikLab file");
+function resizeCanvas(){
+ const maxW=center.clientWidth-30,maxH=center.clientHeight-55,scale=Math.min(maxW/640,maxH/360);
+ canvas.style.width=Math.max(320,640*scale)+"px";canvas.style.height=Math.max(180,360*scale)+"px";
+ draw();
 }
-function openFile(){fileInput.click()}
+window.addEventListener("resize",resizeCanvas);
 
-fileInput.onchange=async e=>{
- const f=e.target.files[0];if(!f)return;
- try{
-  const data=JSON.parse(await f.text());
-  if(data.format!=="PhysikLab Save"||!Array.isArray(data.sprites)||!Array.isArray(data.clones))
-    throw new Error("This is not a valid PhysikLab Save .phy file.");
-  state=structuredClone(data);
-  state.version=state.version||4;
-  state.stage=state.stage||{};
-  state.sprites=state.sprites||[];
-  state.clones=state.clones||[];
-  fileName=f.name.endsWith(".phy")?f.name:f.name+".phy";
-  selected=null;dirty=false;renderAll();setStatus("Loaded PhysikLab save");
- }catch(err){alert("Could not open file.\n\n"+err.message)}
- fileInput.value="";
-};
-
-function saveFile(){
- const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);
- a.download=fileName.endsWith(".phy")?fileName:fileName+".phy";a.click();
- setTimeout(()=>URL.revokeObjectURL(a.href),500);
- dirty=false;setStatus("Saved");
-}
-
-function num(v,d=0){v=Number(v);return Number.isFinite(v)?v:d}
-function getAll(){
- return [
-  ...state.sprites.filter(o=>String(o.name||o.spriteName||o.originalName||"").startsWith("items//")).map((o,i)=>({...o,_kind:"sprite",_index:state.sprites.indexOf(o),_id:"sprite_"+state.sprites.indexOf(o)})),
-  ...state.clones.filter(o=>String(o.name||o.spriteName||o.originalName||"").startsWith("items//")).map((o,i)=>({...o,_kind:"clone",_index:state.clones.indexOf(o),_id:"clone_"+state.clones.indexOf(o)}))
- ];
-}
-function getSelected(){
- const all=getAll();return all.find(o=>o._id===selected)||null;
-}
-function displayName(o){
- return o.name||o.spriteName||o.originalName||o.type||"Object";
-}
-function objectType(o){return o._kind==="clone"?"clone":"sprite"}
-
-function renderList(){
- objectsEl.innerHTML="";
- const all=getAll();
- if(!all.length){
-  objectsEl.innerHTML='<div class="empty">No items// sprites found.<br>Add one from the inspector.</div>';return;
- }
- for(const o of all){
-  const b=document.createElement("button");
-  b.className="obj"+(o._id===selected?" active":"");
-  const n=displayName(o);
-  b.innerHTML='<div class="obj-icon">'+(o._kind==="clone"?"◈":"◆")+'</div>'+
-    '<div class="obj-text"><div class="obj-name">'+esc(n)+'</div>'+
-    '<div class="obj-type">'+esc(objectType(o))+' • '+num(o.x)+', '+num(o.y)+'</div></div>';
-  b.onclick=()=>{selected=o._id;renderAll()};
-  objectsEl.appendChild(b);
- }
-}
-
-function renderInspector(){
- const o=getSelected();
- if(!o){
-  inspector.innerHTML='<div class="empty">Select an object to edit it.</div>'+
-   '<div class="divider"></div>'+
-   '<button onclick="addObjectPrompt()" style="width:100%;margin-bottom:8px">+ Add Item</button>';
-  return;
- }
- const idx=o._index,kind=o._kind;
- inspector.innerHTML=`
- <div class="section"><label>Name</label><input id="i-name" value="${esc(displayName(o))}"></div>
- <div class="section"><label>Kind</label><input value="${kind}" disabled></div>
- <div class="section"><div class="grid2">
-   <div><label>X</label><input id="i-x" type="number" step="0.1" value="${num(o.x)}"></div>
-   <div><label>Y</label><input id="i-y" type="number" step="0.1" value="${num(o.y)}"></div>
- </div></div>
- <div class="section"><div class="grid2">
-   <div><label>Width</label><input id="i-w" type="number" min="1" step="1" value="${num(o.width,40)}"></div>
-   <div><label>Height</label><input id="i-h" type="number" min="1" step="1" value="${num(o.height,40)}"></div>
- </div></div>
- <div class="section"><label>Direction / Rotation</label><input id="i-r" type="number" step="1" value="${num(o.direction,o.rotation||90)}"></div>
- <div class="section"><label>Color (editor only)</label><input id="i-color" type="color" value="${/^#[0-9a-f]{6}$/i.test(o._editorColor||"")?o._editorColor:"#58a6ff"}"></div>
- <div class="divider"></div>
- <button onclick="duplicateSelected()" style="width:100%;margin-bottom:8px">Duplicate</button>
- <button class="danger" onclick="deleteSelected()" style="width:100%;margin-bottom:8px">Delete</button>
- <div class="divider"></div>
- <button onclick="addObjectPrompt()" style="width:100%">+ Add Item</button>`;
- 
- const bind=(id,fn)=>{const el=document.getElementById(id);if(el)el.oninput=fn};
- bind("i-name",()=>{o.name=document.getElementById("i-name").value;markDirty();renderList()});
- bind("i-x",()=>{o.x=num(document.getElementById("i-x").value);markDirty();renderList();draw()});
- bind("i-y",()=>{o.y=num(document.getElementById("i-y").value);markDirty();renderList();draw()});
- bind("i-w",()=>{o.width=num(document.getElementById("i-w").value,40);markDirty();draw()});
- bind("i-h",()=>{o.height=num(document.getElementById("i-h").value,40);markDirty();draw()});
- bind("i-r",()=>{if("direction" in o)o.direction=num(document.getElementById("i-r").value);else o.rotation=num(document.getElementById("i-r").value);markDirty();draw()});
- bind("i-color",()=>{o._editorColor=document.getElementById("i-color").value;markDirty();draw()});
-}
-
-function makeBase(name,kind){
- return {
-   name:name,
-   isStage:false,
-   isOriginal:kind==="sprite",
-   x:0,y:0,direction:90,size:100,visible:true,costume:0,volume:100,
-   rotationStyle:"all around",effects:{},variables:{},lists:{}
- };
-}
-function addObjectPrompt(){
- const name=prompt('Name of the item/sprite to add:\n\nExample: box\nThis will be saved as: items//box');
- if(name===null)return;
- const clean=name.trim();if(!clean)return;
- const full=clean.startsWith("items//")?clean:"items//"+clean;
- const o=makeBase(full,"clone");
- o.isOriginal=false;
- state.clones.push(o);
- selected="clone_"+(state.clones.length-1);
- markDirty();renderAll();
-}
-function duplicateSelected(){
- const o=getSelected();if(!o)return;
- const copy=JSON.parse(JSON.stringify(o));
- delete copy._kind;delete copy._index;delete copy._id;
- copy.x=num(copy.x)+20;copy.y=num(copy.y)+20;
- if(o._kind==="sprite"){state.sprites.push(copy);selected="sprite_"+(state.sprites.length-1)}
- else{state.clones.push(copy);selected="clone_"+(state.clones.length-1)}
- markDirty();renderAll();
-}
-function deleteSelected(){
- const o=getSelected();if(!o)return;
- if(o._kind==="sprite")state.sprites.splice(o._index,1);
- else state.clones.splice(o._index,1);
- selected=null;markDirty();renderAll();
-}
-
-function resize(){
- const r=canvas.getBoundingClientRect(),d=devicePixelRatio||1;
- canvas.width=r.width*d;canvas.height=r.height*d;ctx.setTransform(d,0,0,d,0,0);draw();
-}
-function worldToScreen(x,y){
- const w=canvas.clientWidth,h=canvas.clientHeight;
- return {x:w/2+(x-view.x)*view.zoom,y:h/2-(y-view.y)*view.zoom};
-}
-function screenToWorld(x,y){
- const w=canvas.clientWidth,h=canvas.clientHeight;
- return {x:(x-w/2)/view.zoom+view.x,y:-((y-h/2)/view.zoom)+view.y};
-}
-function draw(){
- const w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);
- ctx.fillStyle="#0b0f14";ctx.fillRect(0,0,w,h);
- const grid=50*view.zoom;ctx.beginPath();
- for(let x=w/2-(view.x%50)*view.zoom;x<w;x+=grid){ctx.moveTo(x,0);ctx.lineTo(x,h)}
- for(let y=h/2+(view.y%50)*view.zoom;y<h;y+=grid){ctx.moveTo(0,y);ctx.lineTo(w,y)}
- ctx.strokeStyle="#1b222c";ctx.lineWidth=1;ctx.stroke();
- const origin=worldToScreen(0,0);ctx.strokeStyle="#6e7681";ctx.beginPath();
- ctx.moveTo(origin.x,0);ctx.lineTo(origin.x,h);ctx.moveTo(0,origin.y);ctx.lineTo(w,origin.y);ctx.stroke();
- for(const o of getAll())drawObject(o);
-}
-function drawObject(o){
- if(o.visible===false)return;
- const p=worldToScreen(num(o.x),num(o.y)),w=Math.max(12,num(o.width,40)*view.zoom),h=Math.max(12,num(o.height,40)*view.zoom);
- ctx.save();ctx.translate(p.x,p.y);
- const rot=num(o.direction,90)-90;ctx.rotate(-rot*Math.PI/180);
- ctx.fillStyle=o._editorColor||(o._kind==="clone"?"#8b949e":"#58a6ff");ctx.globalAlpha=o._id===selected?.9:.55;
- ctx.fillRect(-w/2,-h/2,w,h);
- if(o._kind==="clone"){ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.setLineDash([5,4]);ctx.strokeRect(-w/2,-h/2,w,h);ctx.setLineDash([])}
- if(o._id===selected){ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.strokeRect(-w/2-3,-h/2-3,w+6,h+6)}
- ctx.restore();
-}
-function hitObject(sx,sy){
- const all=getAll();
+function worldToCanvas(x,y){return{x:320+n(x),y:180-n(y)}}
+function canvasPoint(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*640/r.width,y:(e.clientY-r.top)*360/r.height}}
+function hit(p){
+ const all=refList();
  for(let i=all.length-1;i>=0;i--){
-  const o=all[i],p=worldToScreen(num(o.x),num(o.y)),w=Math.max(12,num(o.width,40)*view.zoom),h=Math.max(12,num(o.height,40)*view.zoom);
-  if(Math.abs(sx-p.x)<=w/2+6&&Math.abs(sy-p.y)<=h/2+6)return o;
+  const q=worldToCanvas(all[i].o.x,all[i].o.y),size=32*(n(all[i].o.size,100)/100);
+  if(Math.abs(p.x-q.x)<=Math.max(14,size/2+5)&&Math.abs(p.y-q.y)<=Math.max(14,size/2+5))return all[i];
  }
  return null;
 }
-canvas.addEventListener("pointerdown",e=>{
- if(e.button!==0)return;
- const r=canvas.getBoundingClientRect();
- const sx=e.clientX-r.left,sy=e.clientY-r.top;
- const o=hitObject(sx,sy);
- if(!o)return;
- e.preventDefault();
- selected=o._id;
- const p=worldToScreen(num(o.x),num(o.y));
- drag={o,dx:sx-p.x,dy:sy-p.y,pointerId:e.pointerId};
- canvas.style.cursor="grabbing";
- renderList();renderInspector();draw();
-});
-window.addEventListener("pointermove",e=>{
- if(!drag)return;
- e.preventDefault();
- const r=canvas.getBoundingClientRect();
- const sx=e.clientX-r.left,sy=e.clientY-r.top;
- const p=screenToWorld(sx-drag.dx,sy-drag.dy);
- drag.o.x=Math.round(p.x*10)/10;
- drag.o.y=Math.round(p.y*10)/10;
- markDirty();
- renderList();
- renderInspector();
- draw();
-},{passive:false});
-window.addEventListener("pointerup",e=>{
- if(!drag)return;
- drag=null;
- canvas.style.cursor="crosshair";
-});
-window.addEventListener("pointercancel",()=>{
- drag=null;
- canvas.style.cursor="crosshair";
-});
-canvas.addEventListener("dblclick",e=>{
- const r=canvas.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,p=screenToWorld(sx,sy);
- if(!hitObject(sx,sy)){const name=prompt("Name for item:","box");if(name){const full=name.trim().startsWith("items//")?name.trim():"items//"+name.trim();const o=makeBase(full,"clone");o.isOriginal=false;o.x=Math.round(p.x);o.y=Math.round(p.y);state.clones.push(o);selected="clone_"+(state.clones.length-1);markDirty();renderAll()}}
-});
-canvas.addEventListener("wheel",e=>{
- e.preventDefault();const r=canvas.getBoundingClientRect(),before=screenToWorld(e.clientX-r.left,e.clientY-r.top),factor=e.deltaY<0?1.1:.9;
- view.zoom=Math.max(.15,Math.min(4,view.zoom*factor));const after=screenToWorld(e.clientX-r.left,e.clientY-r.top);
- view.x+=before.x-after.x;view.y+=before.y-after.y;draw();
-},{passive:false});
-window.addEventListener("resize",resize);
+
+function draw(){
+ ctx.clearRect(0,0,640,360);ctx.fillStyle="#fff";ctx.fillRect(0,0,640,360);
+ ctx.strokeStyle="#e5e7eb";ctx.lineWidth=1;
+ for(let x=0;x<=640;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,360);ctx.stroke()}
+ for(let y=0;y<=360;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(640,y);ctx.stroke()}
+ ctx.strokeStyle="#9ca3af";ctx.beginPath();ctx.moveTo(320,0);ctx.lineTo(320,360);ctx.moveTo(0,180);ctx.lineTo(640,180);ctx.stroke();
+ for(const r of refList()){
+  const o=r.o;if(o.visible===false)continue;const p=worldToCanvas(o.x,o.y),s=Math.max(12,32*n(o.size,100)/100);
+  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(-(n(o.direction,90)-90)*Math.PI/180);
+  ctx.globalAlpha=r.id===selected?1:.72;ctx.fillStyle=r.kind==="clone"?"#7c3aed":"#2563eb";ctx.fillRect(-s/2,-s/2,s,s);
+  if(r.kind==="clone"){ctx.strokeStyle="#fff";ctx.setLineDash([4,3]);ctx.strokeRect(-s/2,-s/2,s,s);ctx.setLineDash([])}
+  if(r.id===selected){ctx.globalAlpha=1;ctx.strokeStyle="#111827";ctx.lineWidth=2;ctx.strokeRect(-s/2-3,-s/2-3,s+6,s+6)}
+  ctx.restore();
+ }
+}
+
+function renderList(){
+ const all=refList();objectsEl.innerHTML="";
+ if(!all.length){objectsEl.innerHTML='<div class="empty">No items// objects.<br><br>Use + Add Item.</div>';return}
+ for(const r of all){const b=document.createElement("button");b.className="obj"+(r.id===selected?" active":"");b.innerHTML='<div class="icon">'+(r.kind==="clone"?"◈":"◆")+'</div><div class="objtext"><div class="name">'+esc(r.o.name)+'</div><div class="sub">'+r.kind+" • "+n(r.o.x)+", "+n(r.o.y)+'</div></div>';b.onclick=()=>{selected=r.id;renderAll()};objectsEl.appendChild(b)}
+}
+
+function renderInspector(){
+ const r=selectedRef();if(!r){inspector.innerHTML='<div class="empty">Select an item to edit it.</div><div class="divider"></div><button class="add" onclick="addItem()">+ Add Item</button>';return}
+ const o=r.o;
+ inspector.innerHTML='<div class="section"><label>Name</label><input id="name" value="'+esc(o.name)+'"></div>'+
+ '<div class="section"><label>Type</label><input value="'+r.kind+'" disabled></div>'+
+ '<div class="section"><div class="grid"><div><label>X</label><input id="x" type="number" step="1" value="'+n(o.x)+'"></div><div><label>Y</label><input id="y" type="number" step="1" value="'+n(o.y)+'"></div></div></div>'+
+ '<div class="section"><label>Direction</label><input id="direction" type="number" step="1" value="'+n(o.direction,90)+'"></div>'+
+ '<div class="section"><label>Size (%)</label><input id="size" type="number" step="1" min="1" value="'+n(o.size,100)+'"></div>'+
+ '<div class="section"><label>Costume</label><input id="costume" type="number" step="1" min="0" value="'+n(o.costume,0)+'"></div>'+
+ '<div class="section"><label>Volume</label><input id="volume" type="number" step="1" min="0" max="100" value="'+n(o.volume,100)+'"></div>'+
+ '<div class="section"><label><input id="visible" type="checkbox" style="width:auto;margin-right:7px" '+(o.visible!==false?"checked":"")+'>Visible</label></div>'+
+ '<div class="divider"></div><button style="width:100%;margin-bottom:8px" onclick="duplicate()">Duplicate</button><button class="danger" style="width:100%" onclick="removeSelected()">Delete</button>';
+ const bind=(id,fn)=>document.getElementById(id).addEventListener("input",fn);
+ bind("name",e=>{o.name=cleanName(e.target.value);e.target.value=o.name;markDirty();renderList();draw()});
+ bind("x",e=>{o.x=n(e.target.value);markDirty();renderList();draw()});bind("y",e=>{o.y=n(e.target.value);markDirty();renderList();draw()});
+ bind("direction",e=>{o.direction=n(e.target.value,90);markDirty();draw()});bind("size",e=>{o.size=Math.max(1,n(e.target.value,100));markDirty();draw()});
+ bind("costume",e=>{o.costume=Math.max(0,n(e.target.value));markDirty()});bind("volume",e=>{o.volume=Math.max(0,Math.min(100,n(e.target.value,100)));markDirty()});
+ document.getElementById("visible").onchange=e=>{o.visible=e.target.checked;markDirty();draw()};
+}
+
 function renderAll(){renderList();renderInspector();draw()}
-resize();renderAll();
+
+function addItem(x=0,y=0){
+ const raw=prompt("Name of item:","box");if(raw===null||!raw.trim())return;
+ const o={name:cleanName(raw),isStage:false,isOriginal:false,x:n(x),y:n(y),direction:90,size:100,visible:true,costume:0,volume:100,rotationStyle:"all around",effects:{},variables:{},lists:{}};
+ state.clones.push(o);selected="c"+(state.clones.length-1);markDirty();renderAll();
+}
+function duplicate(){const r=selectedRef();if(!r)return;const o=JSON.parse(JSON.stringify(r.o));o.x=n(o.x)+20;o.y=n(o.y)-20;state.clones.push(o);selected="c"+(state.clones.length-1);markDirty();renderAll()}
+function removeSelected(){const r=selectedRef();if(!r)return;if(r.kind==="clone")state.clones.splice(r.index,1);else state.sprites.splice(r.index,1);selected=null;markDirty();renderAll()}
+
+function newFile(){if(dirty&&!confirm("Discard unsaved changes?"))return;state={format:"PhysikLab Save",version:4,stage:{},sprites:[],clones:[]};selected=null;fileName="untitled.phy";dirty=false;fileNameEl.textContent=fileName;statusEl.textContent="Ready";renderAll()}
+function openFile(){fileInput.click()}
+fileInput.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(d.format!=="PhysikLab Save"||!Array.isArray(d.sprites)||!Array.isArray(d.clones))throw Error("Not a PhysikLab Save .phy file.");state=structuredClone(d);state.version=state.version||4;state.stage=state.stage||{};state.sprites=state.sprites||[];state.clones=state.clones||[];selected=null;fileName=f.name.endsWith(".phy")?f.name:f.name+".phy";fileNameEl.textContent=fileName;dirty=false;statusEl.textContent="Loaded";renderAll()}catch(err){alert("Could not open file.\n\n"+err.message)}fileInput.value=""};
+function saveFile(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fileName.endsWith(".phy")?fileName:fileName+".phy";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);dirty=false;statusEl.textContent="Saved"}
+
+canvas.addEventListener("pointerdown",e=>{
+ if(e.button!==0)return;const p=canvasPoint(e),r=hit(p);if(!r)return;
+ selected=r.id;drag={r,dx:p.x-worldToCanvas(r.o.x,r.o.y).x,dy:p.y-worldToCanvas(r.o.x,r.o.y).y};
+ canvas.setPointerCapture(e.pointerId);canvas.style.cursor="grabbing";renderList();renderInspector();draw();
+});
+canvas.addEventListener("pointermove",e=>{
+ if(!drag)return;const p=canvasPoint(e),w={x:p.x-drag.dx-320,y:180-(p.y-drag.dy)};
+ drag.r.o.x=Math.round(w.x);drag.r.o.y=Math.round(w.y);markDirty();renderList();draw();
+});
+canvas.addEventListener("pointerup",e=>{if(drag){drag=null;canvas.style.cursor="default";if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId)}});
+canvas.addEventListener("pointercancel",()=>{drag=null;canvas.style.cursor="default"});
+canvas.addEventListener("dblclick",e=>{const p=canvasPoint(e);if(!hit(p))addItem(Math.round(p.x-320),Math.round(180-p.y))});
+
+resizeCanvas();renderAll();
 </script>
 </body>
 </html>

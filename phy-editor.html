@@ -43,7 +43,7 @@ function markDirty(){dirty=true;statusEl.textContent="Unsaved changes"}
 function cleanName(v){v=String(v??"").trim();return v.startsWith("items//")?v:"items//"+v}
 function refList(){
  const a=[];
- state.sprites.forEach((o,i)=>{if(String(o.name||"").startsWith("items//"))a.push({o,kind:"sprite",index:i,id:"s"+i})});
+ state.sprites.forEach((o,i)=>a.push({o,kind:"sprite",index:i,id:"s"+i}));
  state.clones.forEach((o,i)=>{if(String(o.name||"").startsWith("items//"))a.push({o,kind:"clone",index:i,id:"c"+i})});
  return a;
 }
@@ -85,12 +85,12 @@ function draw(){
 
 function renderList(){
  const all=refList();objectsEl.innerHTML="";
- if(!all.length){objectsEl.innerHTML='<div class="empty">No items// objects.<br><br>Use + Add Item.</div>';return}
+ if(!all.length){objectsEl.innerHTML='<div class="empty">No objects.<br><br>Use + Add Item or + Add Sprite.</div>';return}
  for(const r of all){const b=document.createElement("button");b.className="obj"+(r.id===selected?" active":"");b.innerHTML='<div class="icon">'+(r.kind==="clone"?"◈":"◆")+'</div><div class="objtext"><div class="name">'+esc(r.o.name)+'</div><div class="sub">'+r.kind+" • "+n(r.o.x)+", "+n(r.o.y)+'</div></div>';b.onclick=()=>{selected=r.id;renderAll()};objectsEl.appendChild(b)}
 }
 
 function renderInspector(){
- const r=selectedRef();if(!r){inspector.innerHTML='<div class="empty">Select an item to edit it.</div><div class="divider"></div><button class="add" onclick="addItem()">+ Add Item</button>';return}
+ const r=selectedRef();if(!r){inspector.innerHTML='<div class="empty">Select an item to edit it.</div><div class="divider"></div><button class="add" onclick="addItem()" style="margin-bottom:8px">+ Add Item</button><button class="add" onclick="addSprite()">+ Add Sprite</button>';return}
  const o=r.o;
  inspector.innerHTML='<div class="section"><label>Name</label><input id="name" value="'+esc(o.name)+'"></div>'+
  '<div class="section"><label>Type</label><input value="'+r.kind+'" disabled></div>'+
@@ -100,7 +100,7 @@ function renderInspector(){
  '<div class="section"><label>Costume</label><input id="costume" type="number" step="1" min="0" value="'+n(o.costume,0)+'"></div>'+
  '<div class="section"><label>Volume</label><input id="volume" type="number" step="1" min="0" max="100" value="'+n(o.volume,100)+'"></div>'+
  '<div class="section"><label><input id="visible" type="checkbox" style="width:auto;margin-right:7px" '+(o.visible!==false?"checked":"")+'>Visible</label></div>'+
- '<div class="divider"></div><button style="width:100%;margin-bottom:8px" onclick="duplicate()">Duplicate</button><button class="danger" style="width:100%" onclick="removeSelected()">Delete</button>';
+ '<div class="divider"></div><button style="width:100%;margin-bottom:8px" onclick="duplicate()">Duplicate</button><button class="danger" style="width:100%;margin-bottom:8px" onclick="removeSelected()">Delete</button><button class="add" style="width:100%;margin-top:8px" onclick="addItem()">+ Add Item</button><button class="add" style="width:100%;margin-top:8px" onclick="addSprite()">+ Add Sprite</button>';
  const bind=(id,fn)=>document.getElementById(id).addEventListener("input",fn);
  bind("name",e=>{o.name=cleanName(e.target.value);e.target.value=o.name;markDirty();renderList();draw()});
  bind("x",e=>{o.x=n(e.target.value);markDirty();renderList();draw()});bind("y",e=>{o.y=n(e.target.value);markDirty();renderList();draw()});
@@ -115,6 +115,12 @@ function addItem(x=0,y=0){
  const raw=prompt("Name of item:","box");if(raw===null||!raw.trim())return;
  const o={name:cleanName(raw),isStage:false,isOriginal:false,x:n(x),y:n(y),direction:90,size:100,visible:true,costume:0,volume:100,rotationStyle:"all around",effects:{},variables:{},lists:{}};
  state.clones.push(o);selected="c"+(state.clones.length-1);markDirty();renderAll();
+}
+function addSprite(x=0,y=0){
+ const raw=prompt("Name of sprite:","Sprite1");if(raw===null||!raw.trim())return;
+ const name=raw.trim();
+ const o={name:name,isStage:false,isOriginal:true,x:n(x),y:n(y),direction:90,size:100,visible:true,costume:0,volume:100,rotationStyle:"all around",effects:{},variables:{},lists:{}};
+ state.sprites.push(o);selected="s"+(state.sprites.length-1);markDirty();renderAll();
 }
 function duplicate(){const r=selectedRef();if(!r)return;const o=JSON.parse(JSON.stringify(r.o));o.x=n(o.x)+20;o.y=n(o.y)-20;state.clones.push(o);selected="c"+(state.clones.length-1);markDirty();renderAll()}
 function removeSelected(){const r=selectedRef();if(!r)return;if(r.kind==="clone")state.clones.splice(r.index,1);else state.sprites.splice(r.index,1);selected=null;markDirty();renderAll()}

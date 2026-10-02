@@ -269,18 +269,21 @@ function hitObject(sx,sy){
  return null;
 }
 canvas.addEventListener("pointerdown",e=>{
+ if(e.button!==0)return;
  const r=canvas.getBoundingClientRect();
- const sx=e.clientX-r.left,sy=e.clientY-r.top,o=hitObject(sx,sy);
+ const sx=e.clientX-r.left,sy=e.clientY-r.top;
+ const o=hitObject(sx,sy);
  if(!o)return;
+ e.preventDefault();
  selected=o._id;
  const p=worldToScreen(num(o.x),num(o.y));
- drag={o,dx:sx-p.x,dy:sy-p.y};
- canvas.setPointerCapture(e.pointerId);
+ drag={o,dx:sx-p.x,dy:sy-p.y,pointerId:e.pointerId};
  canvas.style.cursor="grabbing";
  renderList();renderInspector();draw();
 });
-canvas.addEventListener("pointermove",e=>{
+window.addEventListener("pointermove",e=>{
  if(!drag)return;
+ e.preventDefault();
  const r=canvas.getBoundingClientRect();
  const sx=e.clientX-r.left,sy=e.clientY-r.top;
  const p=screenToWorld(sx-drag.dx,sy-drag.dy);
@@ -290,15 +293,13 @@ canvas.addEventListener("pointermove",e=>{
  renderList();
  renderInspector();
  draw();
+},{passive:false});
+window.addEventListener("pointerup",e=>{
+ if(!drag)return;
+ drag=null;
+ canvas.style.cursor="crosshair";
 });
-canvas.addEventListener("pointerup",e=>{
- if(drag){
-  drag=null;
-  canvas.style.cursor="crosshair";
-  if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
- }
-});
-canvas.addEventListener("pointercancel",e=>{
+window.addEventListener("pointercancel",()=>{
  drag=null;
  canvas.style.cursor="crosshair";
 });

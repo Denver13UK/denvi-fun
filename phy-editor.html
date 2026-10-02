@@ -122,8 +122,8 @@ function saveFile(){
 function num(v,d=0){v=Number(v);return Number.isFinite(v)?v:d}
 function getAll(){
  return [
-  ...state.sprites.map((o,i)=>({...o,_kind:"sprite",_index:i,_id:"sprite_"+i})),
-  ...state.clones.map((o,i)=>({...o,_kind:"clone",_index:i,_id:"clone_"+i}))
+  ...state.sprites.filter(o=>String(o.name||o.spriteName||o.originalName||"").startsWith("items//")).map((o,i)=>({...o,_kind:"sprite",_index:state.sprites.indexOf(o),_id:"sprite_"+state.sprites.indexOf(o)})),
+  ...state.clones.filter(o=>String(o.name||o.spriteName||o.originalName||"").startsWith("items//")).map((o,i)=>({...o,_kind:"clone",_index:state.clones.indexOf(o),_id:"clone_"+state.clones.indexOf(o)}))
  ];
 }
 function getSelected(){
@@ -138,7 +138,7 @@ function renderList(){
  objectsEl.innerHTML="";
  const all=getAll();
  if(!all.length){
-  objectsEl.innerHTML='<div class="empty">No saved objects.<br>Add one from the inspector.</div>';return;
+  objectsEl.innerHTML='<div class="empty">No items// sprites found.<br>Add one from the inspector.</div>';return;
  }
  for(const o of all){
   const b=document.createElement("button");
@@ -157,8 +157,7 @@ function renderInspector(){
  if(!o){
   inspector.innerHTML='<div class="empty">Select an object to edit it.</div>'+
    '<div class="divider"></div>'+
-   '<button onclick="addObjectPrompt()" style="width:100%;margin-bottom:8px">+ Add Item</button>'+
-   '<button onclick="addSpawnerPrompt()" style="width:100%">+ Add Spawner</button>';
+   '<button onclick="addObjectPrompt()" style="width:100%;margin-bottom:8px">+ Add Item</button>';
   return;
  }
  const idx=o._index,kind=o._kind;
@@ -179,8 +178,7 @@ function renderInspector(){
  <button onclick="duplicateSelected()" style="width:100%;margin-bottom:8px">Duplicate</button>
  <button class="danger" onclick="deleteSelected()" style="width:100%;margin-bottom:8px">Delete</button>
  <div class="divider"></div>
- <button onclick="addObjectPrompt()" style="width:100%;margin-bottom:8px">+ Add Item</button>
- <button onclick="addSpawnerPrompt()" style="width:100%">+ Add Spawner</button>`;
+ <button onclick="addObjectPrompt()" style="width:100%">+ Add Item</button>`;
  
  const bind=(id,fn)=>{const el=document.getElementById(id);if(el)el.oninput=fn};
  bind("i-name",()=>{o.name=document.getElementById("i-name").value;markDirty();renderList()});
@@ -207,17 +205,6 @@ function addObjectPrompt(){
  const clean=name.trim();if(!clean)return;
  const full=clean.startsWith("items//")?clean:"items//"+clean;
  const o=makeBase(full,"sprite");
- state.sprites.push(o);
- selected="sprite_"+(state.sprites.length-1);
- markDirty();renderAll();
-}
-function addSpawnerPrompt(){
- const name=prompt('Name of the spawner sprite:\n\nExample: box\nThis will be saved as: items//box');
- if(name===null)return;
- const clean=name.trim();if(!clean)return;
- const full=clean.startsWith("items//")?clean:"items//"+clean;
- const o=makeBase(full,"sprite");
- o.x=0;o.y=0;o._editorColor="#f2cc60";
  state.sprites.push(o);
  selected="sprite_"+(state.sprites.length-1);
  markDirty();renderAll();

@@ -204,9 +204,10 @@ function addObjectPrompt(){
  if(name===null)return;
  const clean=name.trim();if(!clean)return;
  const full=clean.startsWith("items//")?clean:"items//"+clean;
- const o=makeBase(full,"sprite");
- state.sprites.push(o);
- selected="sprite_"+(state.sprites.length-1);
+ const o=makeBase(full,"clone");
+ o.isOriginal=false;
+ state.clones.push(o);
+ selected="clone_"+(state.clones.length-1);
  markDirty();renderAll();
 }
 function duplicateSelected(){
@@ -279,7 +280,7 @@ window.addEventListener("mousemove",e=>{
 window.addEventListener("mouseup",()=>drag=null);
 canvas.addEventListener("dblclick",e=>{
  const r=canvas.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,p=screenToWorld(sx,sy);
- if(!hitObject(sx,sy)){const name=prompt("Name for item:","box");if(name){const full=name.trim().startsWith("items//")?name.trim():"items//"+name.trim();const o=makeBase(full,"sprite");o.x=Math.round(p.x);o.y=Math.round(p.y);state.sprites.push(o);selected="sprite_"+(state.sprites.length-1);markDirty();renderAll()}}
+ if(!hitObject(sx,sy)){const name=prompt("Name for item:","box");if(name){const full=name.trim().startsWith("items//")?name.trim():"items//"+name.trim();const o=makeBase(full,"clone");o.isOriginal=false;o.x=Math.round(p.x);o.y=Math.round(p.y);state.clones.push(o);selected="clone_"+(state.clones.length-1);markDirty();renderAll()}}
 });
 canvas.addEventListener("wheel",e=>{
  e.preventDefault();const r=canvas.getBoundingClientRect(),before=screenToWorld(e.clientX-r.left,e.clientY-r.top),factor=e.deltaY<0?1.1:.9;

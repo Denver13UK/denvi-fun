@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PHY Editor</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0d1117;color:#e6edf3;overflow:hidden}
+button,input,select{font:inherit}
+button{border:1px solid #30363d;background:#21262d;color:#e6edf3;border-radius:8px;padding:8px 12px;cursor:pointer}
+button:hover{background:#30363d}
+button.primary{background:#238636;border-color:#2ea043}
+button.primary:hover{background:#2ea043}
+.app{height:100%;display:grid;grid-template-rows:58px 1fr}
+.top{display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #30363d;background:#161b22}
+.logo{font-weight:800;font-size:19px;margin-right:8px}
+.logo span{color:#58a6ff}
+.file-name{color:#8b949e;font-size:13px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.workspace{display:grid;grid-template-columns:240px 1fr 280px;min-height:0}
+.panel{background:#161b22;border-right:1px solid #30363d;min-height:0;display:flex;flex-direction:column}
+.panel.right{border-right:0;border-left:1px solid #30363d}
+.panel-title{padding:13px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8b949e;border-bottom:1px solid #30363d}
+.objects{overflow:auto;padding:8px}
+.obj{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:9px 10px;border:1px solid transparent;background:transparent;border-radius:8px;margin-bottom:4px}
+.obj:hover{background:#21262d}
+.obj.active{background:#1f6feb33;border-color:#1f6feb88}
+.obj-icon{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;background:#21262d}
+.obj-text{min-width:0}
+.obj-name{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.obj-type{font-size:11px;color:#8b949e}
+.empty{padding:18px 10px;color:#8b949e;font-size:13px;text-align:center}
+.canvas-wrap{position:relative;overflow:hidden;background:#0b0f14}
+canvas{display:block;width:100%;height:100%;cursor:crosshair}
+.hint{position:absolute;left:14px;bottom:12px;background:#161b22dd;border:1px solid #30363d;padding:7px 10px;border-radius:7px;color:#8b949e;font-size:12px;pointer-events:none}
+.inspector{overflow:auto;padding:14px}
+.section{margin-bottom:18px}
+label{display:block;font-size:11px;color:#8b949e;margin:0 0 5px}
+input,select{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:7px;padding:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.divider{height:1px;background:#30363d;margin:14px 0}
+.danger{border-color:#da3633;color:#ff7b72;background:transparent}
+.status{font-size:12px;color:#8b949e;white-space:nowrap}
+@media(max-width:850px){.workspace{grid-template-columns:190px 1fr}.panel.right{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="logo">PHY <span>Editor</span></div>
+  <button onclick="newFile()">New</button>
+  <button onclick="openFile()">Open .phy</button>
+  <button class="primary" onclick="saveFile()">Save .phy</button>
+  <div class="file-name" id="fileName">untitled.phy</div>
+  <div class="status" id="status">Ready</div>
+</header>
+<div class="workspace">
+  <aside class="panel">
+    <div class="panel-title">Objects</div>
+    <div class="objects" id="objects"></div>
+  </aside>
+  <main class="canvas-wrap">
+    <canvas id="canvas"></canvas>
+    <div class="hint">Drag objects • Double-click empty space to add an Item</div>
+  </main>
+  <aside class="panel right">
+    <div class="panel-title">Inspector</div>
+    <div class="inspector" id="inspector">
+      <div class="empty">Select an object to edit it.</div>
+    </div>
+  </aside>
+</div>
+<input id="fileInput" type="file" accept=".phy,.json" hidden>
+<script>
+const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
+const objectsEl=document.getElementById("objects"),inspector=document.getElementById("inspector");
+const fileInput=document.getElementById("fileInput"),statusEl=document.getElementById("status"),fileNameEl=document.getElementById("fileName");
+let state={format:"PHY",version:1,objects:[]};
+let selected=null,drag=null,fileName="untitled.phy",dirty=false;
+let view={x:0,y:0,zoom:1};
+
+function uid(){return "obj_"+Math.random().toString(36).slice(2,9)+"_"+Date.now().toString(36)}
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function setStatus(s){statusEl.textContent=s}
+function markDirty(){dirty=true;setStatus("Unsaved changes")}
+function newFile(){if(dirty&&!confirm("Discard unsaved changes?"))return;state={format:"PHY",version:1,objects:[]};selected=null;fileName="untitled.phy";dirty=false;renderAll();setStatus("New file")}
+function openFile(){fileInput.click()}
+fileInput.onchange=async e=>{
+ const f=e.target.files[0]; if(!f)return;
+ try{
+  const data=JSON.parse(await f.text());
+  if(!Array.isArray(data.objects))throw new Error("This is not a valid PHY file.");
+  state={format:"PHY",version:data.version||1,objects:data.objects.map(normalize)};
+  fileName=f.name.endsWith(".phy")?f.name:f.name.replace(/\.[^.]+$/,"")+".phy";
+  selected=null;dirty=false;renderAll();setStatus("Loaded");
+ }catch(err){alert("Could not open file.\n\n"+err.message)}
+ fileInput.value="";
+};
+function saveFile(){
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fileName.endsWith(".phy")?fileName:fileName+".phy";a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),500);dirty=false;setStatus("Saved");
+}
+function normalize(o){
+ return {id:o.id||uid(),name:o.name||"Object",type:o.type||"item",x:num(o.x),y:num(o.y),width:num(o.width,40),height:num(o.height,40),rotation:num(o.rotation),color:o.color||"#58a6ff",visible:o.visible!==false};
+}
+function num(v,d=0){v=Number(v);return Number.isFinite(v)?v:d}
+function addObject(type="item",x=0,y=0){
+ const names={item:"Item",spawner:"Spawner"};
+ const o=normalize({id:uid(),name:names[type]||"Object",type,x,y,width:type==="spawner"?70:40,height:type==="spawner"?40:40,color:type==="spawner"?"#f2cc60":"#58a6ff"});
+ state.objects.push(o);selected=o.id;markDirty();renderAll();
+}
+function getSelected(){return state.objects.find(o=>o.id===selected)||null}
+function renderList(){
+ objectsEl.innerHTML="";
+ if(!state.objects.length){objectsEl.innerHTML='<div class="empty">No objects yet.<br>Add one from the inspector.</div>';return}
+ for(const o of state.objects){
+  const b=document.createElement("button");b.className="obj"+(o.id===selected?" active":"");
+  b.innerHTML='<div class="obj-icon">'+(o.type==="spawner"?"✦":"◆")+'</div><div class="obj-text"><div class="obj-name">'+esc(o.name)+'</div><div class="obj-type">'+esc(o.type)+' • '+o.x+', '+o.y+'</div></div>';
+  b.onclick=()=>{selected=o.id;renderAll()};
+  objectsEl.appendChild(b);
+ }
+}
+function renderInspector(){
+ const o=getSelected();
+ if(!o){inspector.innerHTML='<div class="empty">Select an object to edit it.</div>';return}
+ inspector.innerHTML=`
+ <div class="section"><label>Name</label><input id="i-name" value="${esc(o.name)}"></div>
+ <div class="section"><label>Type</label><select id="i-type"><option value="item" ${o.type==="item"?"selected":""}>Item</option><option value="spawner" ${o.type==="spawner"?"selected":""}>Spawner</option></select></div>
+ <div class="section"><div class="grid2"><div><label>X</label><input id="i-x" type="number" step="0.1" value="${o.x}"></div><div><label>Y</label><input id="i-y" type="number" step="0.1" value="${o.y}"></div></div></div>
+ <div class="section"><div class="grid2"><div><label>Width</label><input id="i-w" type="number" min="1" step="1" value="${o.width}"></div><div><label>Height</label><input id="i-h" type="number" min="1" step="1" value="${o.height}"></div></div></div>
+ <div class="section"><label>Rotation</label><input id="i-r" type="number" step="1" value="${o.rotation}"></div>
+ <div class="section"><label>Color</label><input id="i-color" type="color" value="${/^#[0-9a-f]{6}$/i.test(o.color)?o.color:"#58a6ff"}"></div>
+ <div class="divider"></div>
+ <div class="row"><button onclick="duplicateSelected()">Duplicate</button><button class="danger" onclick="deleteSelected()">Delete</button></div>
+ <div class="divider"></div>
+ <button onclick="addObject('item',0,0)" style="width:100%;margin-bottom:8px">+ Item at 0, 0</button>
+ <button onclick="addObject('spawner',0,0)" style="width:100%">+ Spawner at 0, 0</button>`;
+ ["name","type","x","y","w","h","r","color"].forEach(k=>{
+  const el=document.getElementById("i-"+k);if(!el)return;
+  el.oninput=()=>{
+   const key={name:"name",type:"type",x:"x",y:"y",w:"width",h:"height",r:"rotation",color:"color"}[k];
+   o[key]=(k==="name"||k==="type"||k==="color")?el.value:num(el.value);
+   markDirty();renderList();draw();
+  };
+ });
+}
+function duplicateSelected(){const o=getSelected();if(!o)return;const n=normalize({...o,id:uid(),name:o.name+" Copy",x:o.x+20,y:o.y+20});state.objects.push(n);selected=n.id;markDirty();renderAll()}
+function deleteSelected(){if(!selected)return;state.objects=state.objects.filter(o=>o.id!==selected);selected=null;markDirty();renderAll()}
+function resize(){const r=canvas.getBoundingClientRect(),d=devicePixelRatio||1;canvas.width=r.width*d;canvas.height=r.height*d;ctx.setTransform(d,0,0,d,0,0);draw()}
+function worldToScreen(x,y){const w=canvas.clientWidth,h=canvas.clientHeight;return {x:w/2+(x-view.x)*view.zoom,y:h/2-(y-view.y)*view.zoom}}
+function screenToWorld(x,y){const w=canvas.clientWidth,h=canvas.clientHeight;return {x:(x-w/2)/view.zoom+view.x,y:-((y-h/2)/view.zoom)+view.y}}
+function draw(){
+ const w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);
+ ctx.fillStyle="#0b0f14";ctx.fillRect(0,0,w,h);
+ const grid=50*view.zoom;
+ ctx.beginPath();
+ for(let x=w/2-(view.x%50)*view.zoom;x<w;x+=grid){ctx.moveTo(x,0);ctx.lineTo(x,h)}
+ for(let y=h/2+(view.y%50)*view.zoom;y<h;y+=grid){ctx.moveTo(0,y);ctx.lineTo(w,y)}
+ ctx.strokeStyle="#1b222c";ctx.lineWidth=1;ctx.stroke();
+ const origin=worldToScreen(0,0);
+ ctx.strokeStyle="#6e7681";ctx.beginPath();ctx.moveTo(origin.x,0);ctx.lineTo(origin.x,h);ctx.moveTo(0,origin.y);ctx.lineTo(w,origin.y);ctx.stroke();
+ for(const o of state.objects)drawObject(o);
+}
+function drawObject(o){
+ if(o.visible===false)return;
+ const p=worldToScreen(o.x,o.y),w=o.width*view.zoom,h=o.height*view.zoom;
+ ctx.save();ctx.translate(p.x,p.y);ctx.rotate(-o.rotation*Math.PI/180);
+ ctx.fillStyle=o.color;ctx.globalAlpha=o.id===selected?0.9:0.65;
+ if(o.type==="spawner"){ctx.fillRect(-w/2,-h/2,w,h);ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.strokeRect(-w/2,-h/2,w,h);ctx.beginPath();ctx.moveTo(-w*.25,0);ctx.lineTo(w*.25,0);ctx.moveTo(0,-h*.25);ctx.lineTo(0,h*.25);ctx.stroke()}
+ else{ctx.fillRect(-w/2,-h/2,w,h)}
+ if(o.id===selected){ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.strokeRect(-w/2-3,-h/2-3,w+6,h+6)}
+ ctx.restore();
+}
+function hitObject(sx,sy){
+ for(let i=state.objects.length-1;i>=0;i--){const o=state.objects[i],p=worldToScreen(o.x,o.y),w=o.width*view.zoom,h=o.height*view.zoom;if(Math.abs(sx-p.x)<=w/2+6&&Math.abs(sy-p.y)<=h/2+6)return o}return null
+}
+canvas.addEventListener("mousedown",e=>{
+ const r=canvas.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,o=hitObject(sx,sy);
+ if(o){selected=o.id;drag={o,dx:sx-worldToScreen(o.x,o.y).x,dy:sy-worldToScreen(o.x,o.y).y};renderAll()}
+});
+window.addEventListener("mousemove",e=>{
+ if(!drag)return;const r=canvas.getBoundingClientRect(),p=screenToWorld(e.clientX-r.left-drag.dx,e.clientY-r.top-drag.dy);drag.o.x=Math.round(p.x*10)/10;drag.o.y=Math.round(p.y*10)/10;markDirty();renderList();draw()
+});
+window.addEventListener("mouseup",()=>{drag=null});
+canvas.addEventListener("dblclick",e=>{const r=canvas.getBoundingClientRect(),p=screenToWorld(e.clientX-r.left,e.clientY-r.top);if(!hitObject(e.clientX-r.left,e.clientY-r.top))addObject("item",Math.round(p.x),Math.round(p.y))});
+canvas.addEventListener("wheel",e=>{
+ e.preventDefault();const r=canvas.getBoundingClientRect(),before=screenToWorld(e.clientX-r.left,e.clientY-r.top),factor=e.deltaY<0?1.1:.9;view.zoom=Math.max(.15,Math.min(4,view.zoom*factor));const after=screenToWorld(e.clientX-r.left,e.clientY-r.top);view.x+=before.x-after.x;view.y+=before.y-after.y;draw()
+},{passive:false});
+window.addEventListener("resize",resize);
+function renderAll(){renderList();renderInspector();draw()}
+resize();renderAll();
+</script>
+</body>
+</html>

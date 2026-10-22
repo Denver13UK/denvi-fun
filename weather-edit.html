@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4b9be8">
+  <title>Weather — UI Template</title>
+  <style>
+    :root { color-scheme: light; --glass: rgba(255,255,255,.19); --line: rgba(255,255,255,.22); }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; padding: 28px 16px 48px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      color: #fff; background: linear-gradient(160deg,#65b8f7 0%,#3989df 42%,#2455a1 100%);
+      background-attachment: fixed;
+    }
+    .app { max-width: 440px; margin: 0 auto; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin: 0 4px 24px; }
+    .eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform:uppercase; opacity:.78; }
+    .icon-button { border:1px solid var(--line); background:var(--glass); color:white; width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer; }
+    .hero { text-align:center; padding: 12px 10px 26px; }
+    .city { font-size:34px; font-weight:600; letter-spacing:-.8px; margin:0; }
+    .date { margin:7px 0 0; opacity:.8; font-size:14px; }
+    .weather-symbol { font-size:76px; line-height:1.2; margin:17px 0 0; filter:drop-shadow(0 8px 15px rgba(20,57,103,.16)); }
+    .temperature { font-size:104px; line-height:1.05; font-weight:200; letter-spacing:-7px; margin:0; }
+    .condition { margin:8px 0 5px; font-size:19px; }
+    .high-low { font-size:15px; opacity:.88; margin:0; }
+    .card { background:var(--glass); border:1px solid var(--line); border-radius:24px; padding:19px; margin-top:14px; backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); box-shadow:0 12px 30px rgba(19,57,111,.08); }
+    .section-title { font-size:11px; font-weight:650; letter-spacing:1.4px; opacity:.76; margin:0 0 17px; }
+    .hourly { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; text-align:center; }
+    .hour { display:grid; justify-items:center; gap:12px; font-size:13px; }
+    .hour .symbol { font-size:24px; }
+    .hour strong { font-size:18px; font-weight:550; }
+    .details { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .detail { background:rgba(255,255,255,.10); border-radius:17px; padding:14px; min-height:100px; }
+    .detail-label { font-size:11px; letter-spacing:1px; opacity:.76; }
+    .detail-value { font-size:25px; font-weight:500; margin-top:9px; }
+    .editor { margin-top:25px; background:#f5f8fc; color:#23364c; border-radius:22px; padding:20px; box-shadow:0 16px 36px rgba(13,44,87,.15); }
+    .editor h2 { font-size:18px; margin:0 0 5px; }
+    .editor p { font-size:13px; line-height:1.5; color:#65758a; margin:0 0 16px; }
+    .fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    label { display:block; font-size:12px; font-weight:650; margin-bottom:6px; color:#53647a; }
+    input { width:100%; min-width:0; border:1px solid #d7e0eb; border-radius:11px; padding:11px 12px; font:inherit; color:#1c2e43; background:#fff; outline-color:#4b9be8; }
+    .actions { display:flex; gap:9px; margin-top:14px; }
+    .actions button { border:0; border-radius:12px; padding:11px 14px; font:600 13px inherit; cursor:pointer; }
+    .primary { background:#287bd0; color:white; flex:1; }
+    .secondary { background:#e3ebf5; color:#26415e; }
+    .hint { margin-top:12px; font-size:11px; color:#748399; line-height:1.45; }
+    footer { text-align:center; font-size:11px; opacity:.65; padding-top:20px; }
+    @media (max-width:360px) { .temperature {font-size:88px;} .card {padding:16px;} .fields {grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div><div class="eyebrow">Weather</div><div style="font-size:13px;margin-top:4px;opacity:.85">A little forecast, beautifully presented</div></div>
+      <button class="icon-button" aria-label="Settings" onclick="document.getElementById('cityInput').focus()">☰</button>
+    </header>
+
+    <section class="hero" aria-label="Current weather">
+      <h1 class="city" id="cityName">London</h1>
+      <p class="date" id="todayLabel">My Location</p>
+      <div class="weather-symbol" id="weatherSymbol" aria-hidden="true">🌤️</div>
+      <p class="temperature" id="temperature">18°</p>
+      <p class="condition" id="condition">Partly Cloudy</p>
+      <p class="high-low"><span id="high">H: 20°</span> &nbsp; <span id="low">L: 13°</span></p>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">HOURLY FORECAST</h2>
+      <div class="hourly">
+        <div class="hour"><span>Now</span><span class="symbol">🌤️</span><strong id="hour0">18°</strong></div>
+        <div class="hour"><span>7 PM</span><span class="symbol">☀️</span><strong>17°</strong></div>
+        <div class="hour"><span>8 PM</span><span class="symbol">☁️</span><strong>16°</strong></div>
+        <div class="hour"><span>9 PM</span><span class="symbol">🌙</span><strong>15°</strong></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">WEATHER DETAILS</h2>
+      <div class="details">
+        <div class="detail"><div class="detail-label">FEELS LIKE</div><div class="detail-value">17°</div></div>
+        <div class="detail"><div class="detail-label">CHANCE OF RAIN</div><div class="detail-value">20%</div></div>
+        <div class="detail"><div class="detail-label">WIND</div><div class="detail-value">12 km/h</div></div>
+        <div class="detail"><div class="detail-label">HUMIDITY</div><div class="detail-value">68%</div></div>
+      </div>
+    </section>
+
+    <section class="editor" aria-label="Edit weather template">
+      <h2>✏️ Edit your template</h2>
+      <p>Change the city name and temperature. The preview updates when you press Apply.</p>
+      <div class="fields">
+        <div><label for="cityInput">CITY NAME</label><input id="cityInput" value="London" maxlength="45" placeholder="e.g. Nottingham"></div>
+        <div><label for="tempInput">TEMPERATURE (°C)</label><input id="tempInput" type="number" value="18" min="-99" max="99"></div>
+        <div><label for="highInput">HIGH (°C)</label><input id="highInput" type="number" value="20" min="-99" max="99"></div>
+        <div><label for="lowInput">LOW (°C)</label><input id="lowInput" type="number" value="13" min="-99" max="99"></div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="applyButton">Apply changes</button>
+        <button class="secondary" id="resetButton">Reset</button>
+      </div>
+      <div class="hint">Template preview only — weather values are sample data and are not fetched from a live weather service.</div>
+    </section>
+    <footer>Weather UI concept · Made for denvi-fun</footer>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const defaults = { city: "London", temp: 18, high: 20, low: 13 };
+    function applyWeather() {
+      const city = $("cityInput").value.trim() || "Your City";
+      const temp = Number($("tempInput").value);
+      const high = Number($("highInput").value);
+      const low = Number($("lowInput").value);
+      if (![temp, high, low].every(Number.isFinite)) return;
+      $("cityName").textContent = city;
+      $("temperature").textContent = temp + "°";
+      $("hour0").textContent = temp + "°";
+      $("high").textContent = "H: " + high + "°";
+      $("low").textContent = "L: " + low + "°";
+      $("todayLabel").textContent = "Your weather template";
+    }
+    $("applyButton").addEventListener("click", applyWeather);
+    $("resetButton").addEventListener("click", () => {
+      $("cityInput").value = defaults.city;
+      $("tempInput").value = defaults.temp;
+      $("highInput").value = defaults.high;
+      $("lowInput").value = defaults.low;
+      applyWeather();
+      $("todayLabel").textContent = "My Location";
+    });
+    $("cityInput").addEventListener("keydown", e => { if (e.key === "Enter") applyWeather(); });
+    $("tempInput").addEventListener("keydown", e => { if (e.key === "Enter") applyWeather(); });
+  </script>
+</body>
+</html>

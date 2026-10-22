@@ -43,9 +43,9 @@ footer{text-align:center;font-size:10px;opacity:.68;padding:18px 0 0}.toast{posi
 <p class="desc">Make a fake forecast. Go absurdly hot, absurdly cold, or give your city a cursed name. Changes only affect this preview.</p>
 <div class="fields">
 <div><label for="cityInput">CITY / LOCATION</label><input id="cityInput" value="London" maxlength="55" placeholder="Ohio"></div>
-<div><label for="tempInput">CURRENT TEMPERATURE (°C)</label><input id="tempInput" type="number" value="18" step="any"></div>
-<div><label for="highInput">HIGH (°C)</label><input id="highInput" type="number" value="20" step="any"></div>
-<div><label for="lowInput">LOW (°C)</label><input id="lowInput" type="number" value="13" step="any"></div>
+<div><label for="tempInput">CURRENT TEMPERATURE (°C)</label><input id="tempInput" type="text" inputmode="decimal" value="18" maxlength="18"></div>
+<div><label for="highInput">HIGH (°C)</label><input id="highInput" type="text" inputmode="decimal" value="20" maxlength="18"></div>
+<div><label for="lowInput">LOW (°C)</label><input id="lowInput" type="text" inputmode="decimal" value="13" maxlength="18"></div>
 <div class="wide"><label for="conditionInput">WEATHER SCENE</label><select id="conditionInput"><option value="partly">Partly cloudy</option><option value="sunny">Sunny</option><option value="cloudy">Cloudy</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="night">Clear night</option></select></div>
 <div class="wide"><label for="summaryInput">FUNNY FORECAST TEXT</label><textarea id="summaryInput" maxlength="180" placeholder="The pavement is now a liquid state of matter.">Clouds and sun throughout the day.</textarea></div>
 </div>

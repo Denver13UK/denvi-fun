@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="app" id="app">
-<header class="topbar"><div class="brand"><div class="logo">✦</div><div><h1>Denvi Float</h1><p>Your own little floating-character universe.</p></div></div><div class="top-actions"><button id="exportBtn">Export setup ↗</button><button id="importBtn">Import setup</button><button class="primary" id="fullscreenBtn">⛶ Fullscreen</button></div></header>
+<header class="topbar"><div class="brand"><div class="logo">✦</div><div><h1>Denvi Float</h1><p>Your own little floating-character universe.</p></div></div><div class="top-actions"><button id="exportBtn">Export setup ↗</button><button id="importBtn">Import setup</button><button class="primary" id="fullscreenBtn">↗ Open screensaver</button></div></header>
 <div class="layout">
 <aside class="sidebar">
 <section class="panel"><div class="eyebrow">01 / Scene</div><div class="panel-head"><h2>Background image</h2><span class="muted" style="font-size:11px">Optional</span></div><label class="upload" for="bgInput"><span style="font-size:23px">▧</span><span><strong>Choose a background</strong><small>PNG, JPG, WEBP · stays on your device</small></span><input id="bgInput" type="file" accept="image/*"></label><div class="file-status" id="bgStatus">Using the default night-sky gradient.</div><div class="field"><label for="bgFit">Background fit</label><select id="bgFit" style="background:#211b33;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px"><option value="cover">Cover — fill screen</option><option value="contain">Contain — show whole image</option><option value="fill">Stretch to fit</option></select></div></section>
@@ -33,7 +33,7 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
-const state={characters:[],background:null,instances:[],nextId:1,raf:0,last:0,elapsed:0,toastTimer:0};
+const state={characters:[],background:null,backgroundFile:null,instances:[],nextId:1,raf:0,last:0,elapsed:0,toastTimer:0};
 const stage=$('stage');
 const defaults={amount:12,size:88,speed:3,spin:3,backTint:true,randomSprites:false,edgeBounce:true,bgFit:'cover'};
 let settings={...defaults};
@@ -59,15 +59,16 @@ function animate(now){if(!state.raf)return;const dt=Math.min((now-state.last)/16
 function start(){if(state.raf)return;state.last=performance.now();state.raf=requestAnimationFrame(animate)}
 function readSettings(){settings={amount:+$('amount').value,size:+$('size').value,speed:+$('speed').value,spin:+$('spin').value,backTint:$('backTint').checked,randomSprites:$('randomSprites').checked,edgeBounce:$('edgeBounce').checked,bgFit:$('bgFit').value};updateLabels();applyBackground();syncInstances()}
 ['amount','size','speed','spin','backTint','randomSprites','edgeBounce','bgFit'].forEach(id=>$(id).addEventListener('input',readSettings));
-$('bgInput').addEventListener('change',e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){toast('Please choose an image file.');return}revoke(state.background);state.background=imageURL(file);applyBackground();toast('Background updated 🌌')});
+$('bgInput').addEventListener('change',e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){toast('Please choose an image file.');return}revoke(state.background);state.backgroundFile=file;state.background=imageURL(file);applyBackground();toast('Background updated 🌌')});
 $('addCharBtn').addEventListener('click',()=>{$('spriteInput').value='';$('spriteInput').click()});
 $('spriteInput').addEventListener('change',e=>addCharacter(e.target.files));
 $('resetBtn').addEventListener('click',()=>{settings={...defaults};updateLabels();applyBackground();syncInstances();toast('Motion settings reset')});
 function downloadJSON(data,name){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('exportBtn').addEventListener('click',()=>{const config={app:'Denvi Float',version:1,settings,notes:'Image files are not embedded. Re-add your background and sprites after importing.'};downloadJSON(config,'denvi-float-setup.json');toast('Setup settings exported. Images are not included.')});
 $('importBtn').addEventListener('click',()=>{const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.addEventListener('change',async()=>{const file=input.files&&input.files[0];if(!file)return;try{const cfg=JSON.parse(await file.text());if(cfg.app!=='Denvi Float'||!cfg.settings)throw Error('not a Denvi Float setup');settings={...defaults,...cfg.settings};settings.amount=Math.max(1,Math.min(40,+settings.amount||12));settings.size=Math.max(28,Math.min(180,+settings.size||88));settings.speed=Math.max(1,Math.min(10,+settings.speed||3));settings.spin=Math.max(0,Math.min(10,+settings.spin||0));updateLabels();applyBackground();syncInstances();toast('Setup imported! Add your images to bring it to life.')}catch{toast('That file does not look like a Denvi Float setup.')}});input.click()});
-function toggleFullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen?.().catch(()=>{});document.body.classList.add('fullscreen')}else document.exitFullscreen?.()}
-$('fullscreenBtn').addEventListener('click',toggleFullscreen);$('exitFullscreen').addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen?.();else document.body.classList.remove('fullscreen')});document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.body.classList.remove('fullscreen')});document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('fullscreen')});
+function fileAsDataURL(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)})}
+async function openScreensaver(){if(!state.characters.length){toast('Add at least one character first.');return}const win=window.open('screensaver.html','_blank');if(!win){toast('Allow pop-ups to open the screensaver.');return}try{const payload={type:'DENVI_FLOAT_SETUP',settings,background:state.backgroundFile?await fileAsDataURL(state.backgroundFile):null,characters:await Promise.all(state.characters.map(async c=>({name:c.name,sprites:await Promise.all(c.sprites.map(s=>fileAsDataURL(s.file)))})))});const send=()=>{try{win.postMessage(payload,location.origin)}catch{}};win.addEventListener('load',send,{once:true});win.postMessage(payload,location.origin);toast('Screensaver opened in a new tab ✨')}catch(err){win.close();toast('Could not prepare those images. Try smaller files.')}}
+$('fullscreenBtn').addEventListener('click',openScreensaver);$('exitFullscreen').addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen?.();else document.body.classList.remove('fullscreen')});document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.body.classList.remove('fullscreen')});document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('fullscreen')});
 window.addEventListener('resize',()=>{const w=stage.clientWidth,h=stage.clientHeight;state.instances.forEach(i=>{i.x=Math.min(i.x,Math.max(0,w-i.size));i.y=Math.min(i.y,Math.max(0,h-i.size))})});
 updateLabels();applyBackground();updateStats();start();
 })();

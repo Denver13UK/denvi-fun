@@ -3,87 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#397fbe">
-<title>Weather — denvi-fun</title>
+<meta name="theme-color" content="#3678bd">
+<title>Weather Meme Editor — denvi-fun</title>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:#fff;font-synthesis:none;--glass:rgba(255,255,255,.13);--stroke:rgba(255,255,255,.2)}
-*{box-sizing:border-box}html{min-height:100%;background:#194d86}body{margin:0;min-height:100vh;background:linear-gradient(160deg,#5db9f5,#347fd1 48%,#173c7b);background-attachment:fixed;overflow-x:hidden}
-.sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,#58b4f3 0%,#397ed0 54%,#244b91 100%);transition:background 1.2s}
-.sky:before{content:"";position:absolute;width:70vw;height:70vw;max-width:700px;max-height:700px;left:-20%;top:-35%;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),transparent 68%);animation:glow 9s ease-in-out infinite alternate}
-.sky.night{background:linear-gradient(180deg,#101b43,#263c72 60%,#101c42)}.sky.rain{background:linear-gradient(180deg,#526b8d,#334f76 55%,#192d51)}.sky.snow{background:linear-gradient(180deg,#8ab8d9,#608bb8 58%,#365c88)}.sky.sunny{background:linear-gradient(180deg,#58b9f7,#368be0 56%,#2860ae)}
-.cloud{position:absolute;width:190px;height:55px;border-radius:60px;background:rgba(255,255,255,.22);filter:blur(1px);animation:drift 32s linear infinite}.cloud:before,.cloud:after{content:"";position:absolute;border-radius:50%;background:inherit}.cloud:before{width:85px;height:85px;left:32px;bottom:8px}.cloud:after{width:115px;height:105px;left:82px;bottom:2px}.c1{top:13%;left:-220px;transform:scale(1.2)}.c2{top:34%;left:-240px;animation-duration:43s;animation-delay:-17s;opacity:.65;transform:scale(.8)}.c3{top:61%;left:-240px;animation-duration:51s;animation-delay:-30s;opacity:.4;transform:scale(1.4)}
-.sun-orb{position:absolute;width:120px;height:120px;top:10%;right:10%;border-radius:50%;background:#ffe6a0;box-shadow:0 0 65px 20px rgba(255,220,126,.2);animation:sunpulse 6s ease-in-out infinite alternate}.night .sun-orb{background:#e6edff;width:70px;height:70px;box-shadow:0 0 35px rgba(220,230,255,.25)}
-.rain-layer,.snow-layer{position:absolute;inset:-10% 0 0;opacity:0;transition:opacity .5s}.rain .rain-layer{opacity:.7;background-image:repeating-linear-gradient(105deg,transparent 0 27px,rgba(225,242,255,.42) 28px,transparent 30px 65px);background-size:100% 180px;animation:rainfall .65s linear infinite}.snow .snow-layer{opacity:.85;background-image:radial-gradient(circle,rgba(255,255,255,.8) 1.5px,transparent 2.5px),radial-gradient(circle,rgba(255,255,255,.55) 2px,transparent 3px);background-size:58px 65px,93px 105px;background-position:0 0,30px 25px;animation:snowfall 9s linear infinite}
-@keyframes drift{from{translate:0 0}to{translate:calc(100vw + 330px) 0}}@keyframes glow{to{transform:translate(12%,8%) scale(1.15);opacity:.6}}@keyframes sunpulse{to{transform:scale(1.06);opacity:.8}}@keyframes rainfall{to{background-position:0 180px}}@keyframes snowfall{to{background-position:45px 400px,100px 500px}}
-.app{position:relative;z-index:1;width:min(100% - 28px,520px);margin:0 auto;padding:24px 0 42px}.topbar{display:flex;align-items:center;justify-content:space-between;margin:0 3px 14px}.brand{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.8}.top-actions{display:flex;gap:8px}.round-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--stroke);background:var(--glass);color:#fff;font-size:19px;cursor:pointer;backdrop-filter:blur(15px)}
-.hero{text-align:center;padding:18px 8px 26px;text-shadow:0 2px 18px #173d6c33}.city{font-size:34px;font-weight:550;letter-spacing:-.8px;margin:0}.local-time{font-size:14px;opacity:.8;margin:5px 0 0}.current-icon{font-size:88px;line-height:1.2;margin:13px 0 0;filter:drop-shadow(0 9px 20px #173d6c25)}.temperature{font-size:100px;line-height:1.04;font-weight:200;letter-spacing:-7px;margin:0}.condition{font-size:20px;margin:5px 0 7px}.range{font-size:15px;opacity:.88;margin:0}.summary{font-size:14px;line-height:1.45;opacity:.85;max-width:300px;margin:16px auto 0}
-.card{margin-top:13px;border:1px solid var(--stroke);border-radius:25px;padding:18px;background:var(--glass);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 14px 34px #092c5a12}.section-heading{display:flex;align-items:center;gap:8px;color:#e5f2ff;font-size:11px;font-weight:700;letter-spacing:1.2px;margin:0 0 17px;text-transform:uppercase}.section-heading span{font-size:15px;opacity:.8}.hourly{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;text-align:center}.hour{display:flex;flex-direction:column;align-items:center;gap:13px;font-size:12px;white-space:nowrap}.hour .symbol{font-size:24px}.hour strong{font-size:16px;font-weight:600}.rain-chance{font-size:10px;color:#b9e7ff;margin-top:-8px;min-height:10px}
-.week-row{display:grid;grid-template-columns:1.2fr .6fr 2fr;align-items:center;gap:8px;min-height:44px;border-top:1px solid #ffffff18;font-size:14px}.week-row:first-of-type{border-top:0}.day{font-weight:550}.day small{display:block;font-size:10px;font-weight:400;opacity:.6;margin-top:2px}.week-icon{text-align:center;font-size:21px}.temps{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:13px}.low-temp{opacity:.62}.temp-bar{width:70px;height:5px;border-radius:9px;background:#ffffff26;overflow:hidden}.temp-bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#8be1e9,#ffd47b)}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail{min-height:105px;border-radius:17px;padding:13px;background:#ffffff0d}.detail-label{font-size:10px;letter-spacing:1px;opacity:.73}.detail-value{font-size:24px;font-weight:500;margin-top:11px}.detail-note{font-size:11px;opacity:.7;margin-top:4px}
-.sun-track{height:4px;border-radius:9px;background:linear-gradient(90deg,#b7d8ff,#ffdb8b,#e8b9a1);position:relative;margin:19px 0 10px}.sun-track:before{content:"";position:absolute;left:34%;top:50%;width:12px;height:12px;transform:translateY(-50%);border-radius:50%;background:#fff1b7;box-shadow:0 0 12px #ffe5a1}.sun-times{display:flex;justify-content:space-between;font-size:12px;opacity:.82}
-.editor{margin-top:22px;padding:19px;border-radius:23px;background:#f5f8fc;color:#1c3048;box-shadow:0 16px 38px #092b591a}.editor h2{font-size:18px;margin:0 0 5px}.editor p{font-size:12px;color:#63748a;line-height:1.5;margin:0 0 16px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;font-size:11px;font-weight:700;color:#53647a;margin-bottom:6px}input,select{width:100%;min-width:0;border:1px solid #d6e0eb;border-radius:11px;padding:11px 10px;font:inherit;color:#1c3048;background:#fff;outline-color:#4b9be8}select{cursor:pointer}.actions{display:flex;gap:9px;margin-top:14px}.actions button{border:0;border-radius:12px;padding:12px 14px;font:600 13px -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer}.primary{background:#277bd0;color:#fff;flex:1}.secondary{background:#e3ebf5;color:#26415e}.hint{font-size:10px!important;color:#748399!important;margin:12px 0 0!important}
-footer{text-align:center;font-size:11px;opacity:.65;padding:20px 0 0}.toast{position:fixed;z-index:5;left:50%;bottom:20px;transform:translate(-50%,20px);opacity:0;background:#142d4beF;color:#fff;padding:10px 16px;border-radius:30px;font-size:12px;transition:.25s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:380px){.app{width:min(100% - 20px,520px);padding-top:15px}.temperature{font-size:86px}.current-icon{font-size:76px}.card{padding:15px}.hourly{gap:2px}.hour{font-size:11px}.hour .symbol{font-size:21px}.hour strong{font-size:14px}.temp-bar{width:43px}.temps{gap:5px}.week-row{font-size:12px}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Helvetica,Arial,sans-serif;font-synthesis:none;text-rendering:optimizeLegibility;--line:rgba(255,255,255,.18)}
+*{box-sizing:border-box}html{min-height:100%;background:#3979b8}body{margin:0;min-height:100vh;color:#fff;background:#3979b8;overflow-x:hidden}
+.sky{position:fixed;inset:0;z-index:-2;overflow:hidden;background:linear-gradient(180deg,#4aa4e8 0%,#4a91d4 35%,#326fb5 72%,#24579a 100%);transition:background .7s}
+.sky:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.08),transparent 36%,rgba(5,35,82,.18))}
+.sky.night{background:linear-gradient(180deg,#101b42,#293e70 55%,#101d3c)}.sky.rain{background:linear-gradient(180deg,#526e8c,#3b587b 55%,#233957)}.sky.snow{background:linear-gradient(180deg,#8db8d6,#6895bb 58%,#3b648d)}.sky.sunny{background:linear-gradient(180deg,#4da9e9,#438bd0 52%,#3268ad)}.sky.cloudy{background:linear-gradient(180deg,#839eb8,#627f9f 60%,#405d80)}
+.sun{position:absolute;right:8%;top:8%;width:140px;height:140px;border-radius:50%;background:#fff0b1;box-shadow:0 0 70px 20px #ffe2a044;opacity:.85;animation:pulse 7s ease-in-out infinite alternate}.night .sun{width:76px;height:76px;background:#e6edff;box-shadow:0 0 45px #dce6ff44}
+.cloud{position:absolute;left:-260px;width:190px;height:48px;border-radius:50px;background:#ffffff27;filter:blur(1px);animation:drift 38s linear infinite}.cloud:before,.cloud:after{content:"";position:absolute;border-radius:50%;background:inherit}.cloud:before{width:75px;height:75px;left:30px;bottom:5px}.cloud:after{width:105px;height:90px;left:80px;bottom:0}.c1{top:19%;transform:scale(1.2)}.c2{top:42%;animation-duration:50s;animation-delay:-22s;opacity:.6;transform:scale(.85)}.c3{top:68%;animation-duration:57s;animation-delay:-35s;opacity:.45;transform:scale(1.3)}
+.rain-lines,.snow-dots{position:absolute;inset:0;opacity:0;pointer-events:none}.rain .rain-lines{opacity:.65;background-image:repeating-linear-gradient(105deg,transparent 0 28px,#e7f5ff80 29px,transparent 31px 62px);background-size:100% 160px;animation:rain  .6s linear infinite}.snow .snow-dots{opacity:.8;background-image:radial-gradient(circle,#ffffffd9 1.5px,transparent 2.5px),radial-gradient(circle,#ffffff99 2px,transparent 3px);background-size:55px 62px,91px 98px;animation:snowfall 10s linear infinite}
+@keyframes drift{to{translate:calc(100vw + 350px) 0}}@keyframes pulse{to{transform:scale(1.06);opacity:.65}}@keyframes rain{to{background-position:0 160px}}@keyframes snowfall{to{background-position:30px 420px,90px 520px}}
+.shell{width:min(100% - 24px,470px);margin:0 auto;padding:15px 0 48px}.nav{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 3px;color:#f5f9ff}.nav-label{font-size:13px;font-weight:600;opacity:.92}.nav-buttons{display:flex;gap:9px}.circle{display:grid;place-items:center;width:35px;height:35px;border-radius:50%;border:1px solid #ffffff2a;background:#ffffff19;color:#fff;font-size:17px;cursor:pointer;backdrop-filter:blur(15px)}
+.location{text-align:center;padding:18px 0 22px;text-shadow:0 2px 18px #153d7020}.place{font-size:29px;line-height:1.12;letter-spacing:-.7px;font-weight:500;margin:0}.place-sub{font-size:13px;opacity:.86;margin:5px 0 0}.big-temp{font-size:95px;line-height:1.06;letter-spacing:-5.5px;font-weight:200;margin:1px 0 0}.condition{font-size:19px;font-weight:400;margin:0 0 4px}.hi-low{font-size:14px;opacity:.9;margin:0}.icon-large{height:62px;display:flex;justify-content:center;align-items:center;font-size:49px;margin:10px 0 -1px;filter:drop-shadow(0 4px 12px #15385d25)}.overview{font-size:14px;line-height:1.42;max-width:300px;margin:12px auto 0;color:#f1f7ff}
+.panel{border:1px solid #ffffff20;border-radius:19px;background:linear-gradient(135deg,#ffffff1c,#ffffff0d);box-shadow:0 10px 28px #143b6310;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);padding:15px 15px 13px;margin-top:11px;overflow:hidden}.panel-title{display:flex;align-items:center;gap:6px;margin:0 0 15px;font-size:11px;font-weight:650;letter-spacing:1px;color:#e4f0ff;text-transform:uppercase}.panel-title .mini{font-size:14px;opacity:.75}.hourly{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;text-align:center}.hour{min-width:0;display:flex;align-items:center;flex-direction:column;gap:11px;font-size:12px;white-space:nowrap}.hour .wx{height:24px;font-size:22px;line-height:24px}.hour .chance{font-size:10px;color:#b8e7ff;min-height:10px;margin-top:-7px}.hour strong{font-size:15px;font-weight:500}
+.week{display:flex;flex-direction:column}.week-row{height:43px;display:grid;grid-template-columns:1.15fr 30px 1.9fr;gap:9px;align-items:center;border-top:1px solid #ffffff1b;font-size:14px}.week-row:first-child{border-top:0}.weekday{font-weight:500}.weekday small{display:block;font-size:10px;opacity:.62;font-weight:400;margin-top:1px}.week-wx{text-align:center;font-size:21px}.temps{display:flex;align-items:center;justify-content:flex-end;gap:7px;font-size:13px}.low{opacity:.62}.bar{position:relative;width:74px;height:4px;background:#ffffff28;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;border-radius:10px;background:linear-gradient(90deg,#7fdae9,#f5d07c)}
+.editor{margin-top:24px;padding:17px;border-radius:19px;background:#f6f8fc;color:#20354c;box-shadow:0 15px 40px #0c31541f}.editor-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.editor h2{font-size:18px;letter-spacing:-.3px;margin:0}.editor .desc{font-size:12px;line-height:1.45;color:#63758b;margin:7px 0 15px}.pill{font-size:10px;font-weight:700;border-radius:20px;background:#e1edff;color:#2869b4;padding:6px 9px;white-space:nowrap}.fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}label{display:block;font-size:10px;letter-spacing:.5px;font-weight:750;color:#5c6e83;margin-bottom:6px}input,select,textarea{display:block;width:100%;min-width:0;border:1px solid #d5dfeb;border-radius:10px;padding:10px;font:14px -apple-system,BlinkMacSystemFont,sans-serif;color:#20354c;background:#fff;outline-color:#378ce0}input:focus,select:focus,textarea:focus{border-color:#378ce0}textarea{resize:vertical;min-height:66px}.wide{grid-column:1/-1}.group-label{margin:17px 0 9px;font-size:11px;font-weight:750;color:#2d4660}.actions{display:flex;gap:8px;margin-top:14px}.actions button{border:0;border-radius:10px;padding:12px 14px;font:650 13px -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer}.apply{background:#247fe0;color:#fff;flex:1}.reset{background:#e5ebf3;color:#334b63}.subactions{display:flex;gap:8px;margin-top:8px}.subactions button{flex:1;border:1px solid #d7e1ed;border-radius:10px;padding:10px;background:#fff;color:#35516d;font-size:12px;font-weight:600;cursor:pointer}.help{font-size:10px!important;line-height:1.5;color:#718198!important;margin:12px 0 0!important}
+footer{text-align:center;font-size:10px;opacity:.68;padding:18px 0 0}.toast{position:fixed;left:50%;bottom:22px;z-index:5;transform:translate(-50%,16px);opacity:0;transition:.2s;pointer-events:none;background:#132a45eF;color:white;border-radius:24px;padding:10px 15px;font-size:12px;box-shadow:0 5px 25px #0002;white-space:nowrap}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:370px){.shell{width:calc(100% - 16px);padding-top:10px}.big-temp{font-size:82px}.panel{padding:13px 11px}.hour{font-size:11px}.hour .wx{font-size:20px}.bar{width:44px}.temps{gap:5px}.week-row{gap:5px}.fields{gap:9px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="sky sunny" id="sky" aria-hidden="true"><div class="sun-orb"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div><div class="rain-layer"></div><div class="snow-layer"></div></div>
-<main class="app">
-<header class="topbar"><div><div class="brand">Weather</div><div style="font-size:13px;margin-top:4px;opacity:.8">Your day, at a glance</div></div><div class="top-actions"><button class="round-btn" id="motionBtn" aria-label="Toggle animated background" title="Toggle animation">✦</button><button class="round-btn" aria-label="Jump to editor" onclick="document.getElementById('editor').scrollIntoView({behavior:'smooth'})">⚙</button></div></header>
-<section class="hero" aria-label="Current weather"><h1 class="city" id="cityName">London</h1><p class="local-time" id="localTime">My Location · Today</p><div class="current-icon" id="currentIcon" aria-hidden="true">🌤️</div><p class="temperature"><span id="temperature">18</span><span>°</span></p><p class="condition" id="condition">Partly Cloudy</p><p class="range"><span id="high">H: 20°</span> &nbsp; <span id="low">L: 13°</span></p><p class="summary" id="summary">Clouds and sun throughout the day.</p></section>
-<section class="card"><h2 class="section-heading"><span>◷</span> Hourly forecast</h2><div class="hourly" id="hourly"></div></section>
-<section class="card"><h2 class="section-heading"><span>▤</span> 7-day forecast</h2><div id="weekly"></div></section>
-<section class="card"><h2 class="section-heading"><span>◉</span> Weather details</h2><div class="detail-grid">
-<div class="detail"><div class="detail-label">FEELS LIKE</div><div class="detail-value" id="feels">17°</div><div class="detail-note">Similar to actual temp</div></div>
-<div class="detail"><div class="detail-label">CHANCE OF RAIN</div><div class="detail-value" id="rainChance">20%</div><div class="detail-note">Precipitation</div></div>
-<div class="detail"><div class="detail-label">WIND</div><div class="detail-value" id="wind">12 km/h</div><div class="detail-note">Light breeze</div></div>
-<div class="detail"><div class="detail-label">HUMIDITY</div><div class="detail-value" id="humidity">68%</div><div class="detail-note">Relative humidity</div></div>
-<div class="detail"><div class="detail-label">UV INDEX</div><div class="detail-value" id="uv">4 <span style="font-size:13px">Moderate</span></div><div class="detail-note">Use sun protection</div></div>
-<div class="detail"><div class="detail-label">VISIBILITY</div><div class="detail-value" id="visibility">10 km</div><div class="detail-note">Good visibility</div></div>
-</div></section>
-<section class="card"><h2 class="section-heading"><span>☼</span> Sun</h2><div class="sun-times"><span>↑ Sunrise <b id="sunrise">6:18 AM</b></span><span>↓ Sunset <b id="sunset">7:42 PM</b></span></div><div class="sun-track"></div><div class="sun-times"><span>Daylight</span><b id="daylight">13h 24m</b></div></section>
-<section class="editor" id="editor"><h2>✏️ Make it yours</h2><p>Customise the preview. Pick a weather scene and your city, then apply the changes.</p>
+<div class="sky sunny" id="sky" aria-hidden="true"><div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div><div class="rain-lines"></div><div class="snow-dots"></div></div>
+<main class="shell">
+<header class="nav"><div class="nav-label">Weather</div><div class="nav-buttons"><button class="circle" id="motionBtn" aria-label="Toggle animation" title="Toggle animation">✦</button><button class="circle" onclick="document.getElementById('editor').scrollIntoView({behavior:'smooth'})" aria-label="Open meme editor" title="Edit weather">☷</button></div></header>
+<section class="location" aria-label="Weather preview">
+<h1 class="place" id="cityName">London</h1><p class="place-sub" id="localTime">My Location · Today</p>
+<div class="icon-large" id="currentIcon" aria-hidden="true">🌤️</div>
+<p class="big-temp"><span id="temperature">18</span><span>°</span></p>
+<p class="condition" id="condition">Partly Cloudy</p><p class="hi-low"><span id="high">H: 20°</span> <span style="opacity:.5">·</span> <span id="low">L: 13°</span></p>
+<p class="overview" id="summary">Clouds and sun throughout the day.</p>
+</section>
+<section class="panel"><h2 class="panel-title"><span class="mini">◷</span> Hourly Forecast</h2><div class="hourly" id="hourly"></div></section>
+<section class="panel"><h2 class="panel-title"><span class="mini">▤</span> 7-Day Forecast</h2><div class="week" id="weekly"></div></section>
+<section class="editor" id="editor">
+<div class="editor-head"><h2>Weather Meme Editor</h2><span class="pill">EDIT PREVIEW</span></div>
+<p class="desc">Make a fake forecast. Go absurdly hot, absurdly cold, or give your city a cursed name. Changes only affect this preview.</p>
 <div class="fields">
-<div><label for="cityInput">CITY NAME</label><input id="cityInput" value="London" maxlength="45" placeholder="e.g. Nottingham"></div>
-<div><label for="tempInput">TEMPERATURE (°C)</label><input id="tempInput" type="number" value="18" min="-99" max="99"></div>
-<div><label for="highInput">HIGH (°C)</label><input id="highInput" type="number" value="20" min="-99" max="99"></div>
-<div><label for="lowInput">LOW (°C)</label><input id="lowInput" type="number" value="13" min="-99" max="99"></div>
-<div style="grid-column:1/-1"><label for="conditionInput">WEATHER CONDITION</label><select id="conditionInput"><option value="partly">Partly cloudy</option><option value="sunny">Sunny</option><option value="cloudy">Cloudy</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="night">Clear night</option></select></div>
-</div><div class="actions"><button class="primary" id="applyButton">Apply changes</button><button class="secondary" id="resetButton">Reset</button></div><p class="hint">This is a UI template with example forecast values, not live weather data. Animated scenes respect your device's Reduce Motion setting.</p></section>
-<footer>Weather UI concept · Made for denvi-fun</footer>
+<div><label for="cityInput">CITY / LOCATION</label><input id="cityInput" value="London" maxlength="55" placeholder="Ohio"></div>
+<div><label for="tempInput">CURRENT TEMPERATURE (°C)</label><input id="tempInput" type="number" value="18" step="any"></div>
+<div><label for="highInput">HIGH (°C)</label><input id="highInput" type="number" value="20" step="any"></div>
+<div><label for="lowInput">LOW (°C)</label><input id="lowInput" type="number" value="13" step="any"></div>
+<div class="wide"><label for="conditionInput">WEATHER SCENE</label><select id="conditionInput"><option value="partly">Partly cloudy</option><option value="sunny">Sunny</option><option value="cloudy">Cloudy</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="night">Clear night</option></select></div>
+<div class="wide"><label for="summaryInput">FUNNY FORECAST TEXT</label><textarea id="summaryInput" maxlength="180" placeholder="The pavement is now a liquid state of matter.">Clouds and sun throughout the day.</textarea></div>
+</div>
+<div class="group-label">Hourly forecast</div>
+<div class="fields">
+<div><label for="hourlyNameInput">HOUR LABELS</label><input id="hourlyNameInput" value="Now,3 PM,4 PM,5 PM,6 PM,7 PM" placeholder="Now,3 PM,4 PM..."></div>
+<div><label for="hourlyTempInput">TEMPERATURES</label><input id="hourlyTempInput" value="18,20,24,30,60,999999" placeholder="18,20,24,30..."></div>
+</div>
+<div class="group-label">7-day forecast</div>
+<div class="fields">
+<div class="wide"><label for="daysInput">DAY NAMES (SEPARATE WITH COMMAS)</label><input id="daysInput" value="Mon,Tue,Wed,Thu,Fri,Sat,Sun"></div>
+<div class="wide"><label for="highsInput">DAILY HIGHS</label><input id="highsInput" value="20,22,25,30,45,100,999999"></div>
+<div class="wide"><label for="lowsInput">DAILY LOWS</label><input id="lowsInput" value="13,14,17,20,30,70,999998"></div>
+</div>
+<div class="actions"><button class="apply" id="applyButton">Apply to preview</button><button class="reset" id="resetButton">Reset</button></div>
+<div class="subactions"><button id="ohioButton">🔥 Ohio preset</button><button id="coldButton">🥶 Ice age preset</button><button id="shareButton">Copy meme text</button></div>
+<p class="help">This is a fan-made visual parody, not the official Apple Weather app or a live forecast. Very large numbers are supported. For a clean screenshot, hide the editor by scrolling back to the top or use your browser's full-page screenshot feature.</p>
+</section>
+<footer>Weather Meme Editor · denvi-fun</footer>
 </main><div class="toast" id="toast" role="status">Preview updated</div>
 <script>
 const $=id=>document.getElementById(id);
-const defaults={city:"London",temp:18,high:20,low:13,condition:"partly"};
-const weekDays=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-const dayIcons=["🌤️","☀️","🌦️","☁️","🌧️","🌤️","☀️"];
-const dayConditions=["Partly cloudy","Sunny","Light showers","Cloudy","Rain","Partly cloudy","Sunny"];
-function renderForecast(temp,condition){
- const hours=["Now","3 PM","4 PM","5 PM","6 PM","7 PM"];
- const icons=condition==="rain"?["🌧️","🌧️","🌦️","🌧️","☁️","🌙"]:condition==="snow"?["🌨️","❄️","🌨️","❄️","☁️","🌙"]:condition==="sunny"?["☀️","☀️","🌤️","☀️","🌤️","🌙"]:condition==="night"?["🌙","🌙","🌙","🌙","🌙","🌙"]:["🌤️","☀️","🌤️","☁️","🌥️","🌙"];
- $("hourly").innerHTML=hours.map((h,i)=>'<div class="hour"><span>'+h+'</span><span class="symbol">'+icons[i]+'</span><span class="rain-chance">'+((condition==="rain")?[65,70,45,60,30,15][i]+"%":condition==="snow"?"—":i===2?"10%":"")+'</span><strong>'+(temp+Math.round([0,1,2,1,-1,-2][i]))+'°</strong></div>').join("");
- $("weekly").innerHTML=weekDays.map((d,i)=>'<div class="week-row"><div class="day">'+d+(i===0?'<small>Today</small>':'')+'</div><div class="week-icon">'+(condition==="rain"&&i%2===0?"🌧️":condition==="snow"?"🌨️":dayIcons[i])+'</div><div class="temps"><span>'+(temp+[2,3,1,0,-2,1,4][i])+'°</span><div class="temp-bar"><i style="width:'+([64,82,56,48,30,62,92][i])+'%"></i></div><span class="low-temp">'+(temp+[-5,-4,-6,-7,-8,-5,-3][i])+'°</span></div></div>').join("");
+const defaults={city:"London",temp:"18",high:"20",low:"13",condition:"partly",summary:"Clouds and sun throughout the day.",hours:"Now,3 PM,4 PM,5 PM,6 PM,7 PM",hourTemps:"18,19,20,19,17,16",days:"Mon,Tue,Wed,Thu,Fri,Sat,Sun",highs:"20,22,21,19,18,20,22",lows:"13,14,12,11,10,12,14"};
+const conditions={partly:{icon:"🌤️",name:"Partly Cloudy",scene:"sunny"},sunny:{icon:"☀️",name:"Sunny",scene:"sunny"},cloudy:{icon:"☁️",name:"Cloudy",scene:"cloudy"},rain:{icon:"🌧️",name:"Rain",scene:"rain"},snow:{icon:"🌨️",name:"Snow",scene:"snow"},night:{icon:"🌙",name:"Clear",scene:"night"}};
+function list(id,fallback){return $(id).value.split(",").map(x=>x.trim()).filter(x=>x.length).length?$(id).value.split(",").map(x=>x.trim()):fallback}
+function numList(id,fallback){const a=$(id).value.split(",").map(x=>x.trim()).filter(Boolean);return a.length?a.map(x=>x.replace(/°/g,"")):fallback}
+function showToast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1700)}
+function renderHourly(temp,condition){
+ const names=list("hourlyNameInput",["Now","3 PM","4 PM","5 PM","6 PM","7 PM"]).slice(0,6);
+ const temps=numList("hourlyTempInput",[]);const icons=condition==="rain"?["🌧️","🌧️","🌦️","🌧️","☁️","🌙"]:condition==="snow"?["🌨️","❄️","🌨️","❄️","☁️","🌙"]:condition==="sunny"?["☀️","☀️","🌤️","☀️","🌤️","🌙"]:condition==="night"?["🌙","🌙","🌙","🌙","🌙","🌙"]:condition==="cloudy"?["☁️","☁️","🌥️","☁️","☁️","🌙"]:["🌤️","☀️","🌤️","☁️","🌥️","🌙"];
+ while(names.length<6)names.push("—");while(temps.length<6)temps.push(String(Number(temp)+temps.length));
+ $("hourly").innerHTML=names.map((h,i)=>'<div class="hour"><span>'+escapeHTML(h)+'</span><span class="wx">'+icons[i]+'</span><span class="chance">'+(condition==="rain"?[65,70,45,60,30,15][i]+"%":condition==="snow"?"❄":"")+'</span><strong>'+escapeHTML(temps[i]===undefined?temp:temps[i])+'°</strong></div>').join("");
 }
-function setScene(condition){
- const sky=$("sky");sky.className="sky";
- if(condition==="rain"||condition==="snow"||condition==="night")sky.classList.add(condition);else if(condition==="cloudy")sky.classList.add("rain");else sky.classList.add("sunny");
- const map={partly:["🌤️","Partly Cloudy","Clouds and sun throughout the day."],sunny:["☀️","Sunny","Clear skies and sunshine for most of the day."],cloudy:["☁️","Cloudy","Mostly cloudy skies throughout the day."],rain:["🌧️","Rain","Rain showers are likely. Don't forget a jacket."],snow:["🌨️","Snow","Cold conditions with snow in the forecast."],night:["🌙","Clear Night","Clear skies with a calm night ahead."]};
- const [icon,label,summary]=map[condition]||map.partly;$("currentIcon").textContent=icon;$("condition").textContent=label;$("summary").textContent=summary;
+function renderWeek(temp,condition){
+ let days=list("daysInput",["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]).slice(0,7),highs=numList("highsInput",[]),lows=numList("lowsInput",[]);
+ while(days.length<7)days.push("Day "+(days.length+1));while(highs.length<7)highs.push(String(Number(temp)+days.length));while(lows.length<7)lows.push(String(Number(temp)-5));
+ const icons=condition==="rain"?["🌧️","🌦️","🌧️","☁️","🌧️","🌦️","🌧️"]:condition==="snow"?["🌨️","❄️","🌨️","❄️","🌨️","❄️","🌨️"]:condition==="night"?["🌙","🌙","🌤️","🌙","☁️","🌙","🌙"]:["🌤️","☀️","🌦️","☁️","🌧️","🌤️","☀️"];
+ $("weekly").innerHTML=days.map((d,i)=>'<div class="week-row"><div class="weekday">'+escapeHTML(d)+(i===0?'<small>Today</small>':'')+'</div><div class="week-wx">'+icons[i]+'</div><div class="temps"><span>'+escapeHTML(highs[i]===undefined?temp:highs[i])+'°</span><div class="bar"><i style="width:'+([55,72,63,48,30,66,88][i])+'%"></i></div><span class="low">'+escapeHTML(lows[i]===undefined?temp:lows[i])+'°</span></div></div>').join("");
 }
-function applyWeather(showToast=true){
- const city=$("cityInput").value.trim()||"Your City";const temp=Number($("tempInput").value),high=Number($("highInput").value),low=Number($("lowInput").value);
- if(![temp,high,low].every(Number.isFinite))return;
- $("cityName").textContent=city;$("temperature").textContent=temp;$("high").textContent="H: "+high+"°";$("low").textContent="L: "+low+"°";$("feels").textContent=(temp-1)+"°";
- const condition=$("conditionInput").value;setScene(condition);renderForecast(temp,condition);$("localTime").textContent=city+" · Today";
- if(showToast){$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1700);}
+function escapeHTML(value){return String(value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function applyWeather(toast){
+ const city=$("cityInput").value.trim()||"Your City",temp=$("tempInput").value.trim()||"0",high=$("highInput").value.trim()||temp,low=$("lowInput").value.trim()||temp,condition=$("conditionInput").value;
+ $("cityName").textContent=city;$("temperature").textContent=temp;$("high").textContent="H: "+high+"°";$("low").textContent="L: "+low+"°";$("condition").textContent=conditions[condition].name;$("currentIcon").textContent=conditions[condition].icon;$("summary").textContent=$("summaryInput").value.trim()||"No forecast details available.";$("localTime").textContent=city+" · Today";$("sky").className="sky "+conditions[condition].scene;
+ renderHourly(temp,condition);renderWeek(temp,condition);
+ if(toast)showToast("Meme preview updated ✨");
 }
-$("applyButton").addEventListener("click",()=>applyWeather());
-$("resetButton").addEventListener("click",()=>{$("cityInput").value=defaults.city;$("tempInput").value=defaults.temp;$("highInput").value=defaults.high;$("lowInput").value=defaults.low;$("conditionInput").value=defaults.condition;applyWeather();});
-["cityInput","tempInput","highInput","lowInput"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")applyWeather();}));
+function fillEditor(data){$("cityInput").value=data.city;$("tempInput").value=data.temp;$("highInput").value=data.high;$("lowInput").value=data.low;$("conditionInput").value=data.condition;$("summaryInput").value=data.summary;$("hourlyNameInput").value=data.hours;$("hourlyTempInput").value=data.hourTemps;$("daysInput").value=data.days;$("highsInput").value=data.highs;$("lowsInput").value=data.lows;applyWeather(false)}
+$("applyButton").addEventListener("click",()=>applyWeather(true));
+$("resetButton").addEventListener("click",()=>{fillEditor(defaults);showToast("Reset to default")});
+$("ohioButton").addEventListener("click",()=>{fillEditor({city:"Ohio",temp:"+999999",high:"+999999",low:"-420",condition:"sunny",summary:"The pavement has entered a new state of matter. Hydration is now a side quest.",hours:"NOW,3 PM,4 PM,5 PM,6 PM,7 PM",hourTemps:"+999999,+1000000,+9999999,+420000,+69,-12",days:"MON,TUE,OHIO,WED,THU,FRI,SAT",highs:"999999,1000000,999999999,420000,69,99999,999999",lows:"-420,999998,99999999,300000,68,-999,999998"});showToast("OHIO MODE ACTIVATED 🔥")});
+$("coldButton").addEventListener("click",()=>{fillEditor({city:"Antarctica",temp:"-9999",high:"-9000",low:"-100000",condition:"snow",summary:"Local temperatures have been discontinued until further notice.",hours:"NOW,3 PM,4 PM,5 PM,6 PM,7 PM",hourTemps:"-9999,-10000,-20000,-50000,-99999,-100000",days:"MON,TUE,WED,THU,FRI,SAT,SUN",highs:"-9000,-12000,-5000,-20000,-100000,-99999,-88888",lows:"-100000,-99999,-50000,-30000,-200000,-120000,-999999"});showToast("ICE AGE MODE ACTIVATED 🥶")});
+$("shareButton").addEventListener("click",()=>{const text=$("cityName").textContent+"\\n"+$("temperature").textContent+"° · "+$("condition").textContent+"\\n"+$("high").textContent+"  "+$("low").textContent+"\\n"+$("summary").textContent;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>showToast("Meme text copied!")).catch(()=>fallbackCopy(text))}else fallbackCopy(text)});
+function fallbackCopy(text){const t=document.createElement("textarea");t.value=text;document.body.appendChild(t);t.select();try{document.execCommand("copy");showToast("Meme text copied!")}catch(e){showToast("Select and copy the preview text")}t.remove()}
 let paused=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-$("motionBtn").addEventListener("click",()=>{paused=!paused;document.querySelectorAll(".sky *").forEach(el=>el.style.animationPlayState=paused?"paused":"running");$("motionBtn").textContent=paused?"▶":"✦";});
-const now=new Date();$("localTime").textContent="My Location · "+now.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});
-renderForecast(defaults.temp,defaults.condition);
+$("motionBtn").addEventListener("click",()=>{paused=!paused;document.querySelectorAll(".sky *").forEach(el=>el.style.animationPlayState=paused?"paused":"running");$("motionBtn").textContent=paused?"▶":"✦"});
+$("localTime").textContent="My Location · "+new Date().toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});
+fillEditor(defaults);
 </script>
-</body></html>
+</body>
+</html>

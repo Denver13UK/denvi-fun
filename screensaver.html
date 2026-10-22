@@ -14,7 +14,7 @@
 <script>
 (()=>{'use strict';
 const scene=document.getElementById('scene'),bg=document.getElementById('bg'),message=document.getElementById('message');
-let cfg=null,instances=[],raf=0,last=0;
+let cfg=null,instances=[],raf=0,last=0,speed=3,spin=3,backTint=true;
 const readyTimer=setInterval(()=>{if(!cfg&&window.opener)window.opener.postMessage('DENVI_FLOAT_READY',location.origin);else clearInterval(readyTimer)},200);
 window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.type!=='DENVI_FLOAT_SETUP'||cfg)return;cfg=e.data;start()});
 function rand(a,b){return a+Math.random()*(b-a)}
@@ -24,13 +24,13 @@ function start(){
  if(!chars.length){message.innerHTML='<div><div class="star">✦</div><h1>No characters found</h1><p>Go back to Denvi Float and add character images.</p></div>';return}
  if(cfg.background){bg.src=cfg.background;bg.hidden=false;bg.style.objectFit=s.bgFit||'cover'}
  message.classList.add('hidden');
- const count=Math.max(1,Math.min(40,Number(s.amount)||12)),baseSize=Math.max(28,Math.min(180,Number(s.size)||88)),speed=Math.max(1,Math.min(10,Number(s.speed)||3)),spin=Math.max(0,Math.min(10,Number(s.spin)||3));
+ const count=Math.max(1,Math.min(40,Number(s.amount)||12)),baseSize=Math.max(28,Math.min(180,Number(s.size)||88));speed=Math.max(1,Math.min(10,Number(s.speed)||3));spin=Math.max(0,Math.min(10,Number(s.spin)||3));backTint=s.backTint!==false;
  for(let n=0;n<count;n++){
   const c=chars[Math.floor(Math.random()*chars.length)],el=document.createElement('img');el.className='floater';el.alt='';el.draggable=false;
   const depth=Math.random(),size=baseSize*(.58+depth*.65),a=rand(0,Math.PI*2);
   const i={el,c,idx:Math.floor(Math.random()*c.sprites.length),x:rand(0,Math.max(0,innerWidth-size)),y:rand(0,Math.max(0,innerHeight-size)),vx:Math.cos(a),vy:Math.sin(a),angle:rand(0,360),dir:Math.random()<.5?-1:1,depth,size,phase:rand(0,Math.PI*2),switchAt:performance.now()+1000+Math.random()*800};
   el.src=c.sprites[i.idx];el.style.width=size+'px';el.style.height=size+'px';el.style.zIndex=String(Math.floor(depth*10));el.style.opacity=String(.42+depth*.58);
-  if(depth<.35&&s.backTint!==false)el.style.filter='brightness(.48) sepia(.25) saturate(1.7) hue-rotate(215deg) drop-shadow(0 5px 10px #0006)';
+  if(depth<.35&&backTint)el.style.filter='brightness(.48) sepia(.25) saturate(1.7) hue-rotate(215deg) drop-shadow(0 5px 10px #0006)';
   scene.appendChild(el);instances.push(i);
  }
  last=performance.now();raf=requestAnimationFrame(tick);
